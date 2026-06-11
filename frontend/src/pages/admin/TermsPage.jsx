@@ -14,7 +14,7 @@ export default function TermsPage() {
     queryKey: ['terms'],
     queryFn: async () => {
       const response = await API.get('/terms?limit=100');
-      return response.data;
+      return response.data.data;
     },
   });
 
@@ -54,7 +54,7 @@ export default function TermsPage() {
       ) : (
         <>
           <div className="bg-white dark:bg-gray-900 rounded-xl shadow p-5">
-        <h2 className="text-lg font-bold mb-4">Add Term</h2>
+        <h2 className="text-lg font-bold mb-4 text-gray-900 dark:text-white">Add Term</h2>
         <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
           <select value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })}
             className="px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
@@ -63,7 +63,7 @@ export default function TermsPage() {
           <select value={form.academicYearId} onChange={(e) => setForm({ ...form, academicYearId: e.target.value })}
             className="px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
             <option value="">Select Year</option>
-            {years?.map((y) => <option key={y._id} value={y._id}>{y.year}</option>)}
+            {years ? years.map((y) => <option key={y._id} value={y._id}>{y.year}</option>) : <option disabled>Loading...</option>}
           </select>
           <label className="flex flex-col gap-1">
             <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Start</span>
@@ -81,7 +81,7 @@ export default function TermsPage() {
       {editing && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => { setEditing(null); setEditForm({ name: 'Term 1', academicYearId: '', startDate: '', endDate: '' }); }}>
           <div className="bg-white dark:bg-gray-900 rounded-xl p-6 w-full max-w-lg" onClick={(e) => e.stopPropagation()}>
-            <h2 className="text-lg font-bold mb-4">Edit Term</h2>
+            <h2 className="text-lg font-bold mb-4 text-gray-900 dark:text-white">Edit Term</h2>
             <div className="space-y-3">
               <select value={editForm.name} onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
                 className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
@@ -90,7 +90,7 @@ export default function TermsPage() {
               <select value={editForm.academicYearId} onChange={(e) => setEditForm({ ...editForm, academicYearId: e.target.value })}
                 className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
                 <option value="">Select Year</option>
-                {years?.map((y) => <option key={y._id} value={y._id}>{y.year}</option>)}
+                {years ? years.map((y) => <option key={y._id} value={y._id}>{y.year}</option>) : <option disabled>Loading...</option>}
               </select>
               <label className="flex flex-col gap-1">
                 <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Start Date</span>
@@ -111,13 +111,13 @@ export default function TermsPage() {
         </div>
       )}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {data?.data?.length > 0 ? (
-          data.data.map((t) => (
+        {data?.length > 0 ? (
+          data.map((t) => (
             <div key={t._id} className="bg-white dark:bg-gray-900 rounded-xl shadow p-5">
               <div className="flex justify-between">
                 <div>
                   <h3 className="font-bold text-gray-900 dark:text-white">{t.name}</h3>
-                  <p className="text-sm text-gray-500">{t.academicYearId?.year}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-300">{t.academicYearId?.year}</p>
                   {t.startDate && <p className="text-xs text-gray-400">{new Date(t.startDate).toLocaleDateString()} - {t.endDate ? new Date(t.endDate).toLocaleDateString() : ''}</p>}
                 </div>
                 <div className="flex gap-2">

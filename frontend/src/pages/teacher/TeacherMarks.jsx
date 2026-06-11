@@ -115,7 +115,7 @@ export default function TeacherMarks() {
         <select value={subjectId} onChange={(e) => { setSubjectId(e.target.value); setClassId(''); }}
           className="px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
           <option value="">Select Subject</option>
-          {filteredSubjects?.map((s) => (
+          {subjectsLoading ? <option disabled>Loading...</option> : filteredSubjects?.map((s) => (
             <option key={s._id} value={s._id}>
               {s.name}{s.classIds?.length ? ` (${s.classIds.map((c) => c.name || c).join(', ')})` : ''}
             </option>
@@ -124,12 +124,12 @@ export default function TeacherMarks() {
         <select value={classId} onChange={(e) => setClassId(e.target.value)}
           className="px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
           <option value="">Select Class</option>
-          {filteredClasses?.map((c) => <option key={c._id} value={c._id}>{c.name}</option>)}
+          {classesLoading ? <option disabled>Loading...</option> : filteredClasses?.map((c) => <option key={c._id} value={c._id}>{c.name}</option>)}
         </select>
         <select value={termId} onChange={(e) => setTermId(e.target.value)}
           className="px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
           <option value="">Select Term</option>
-          {terms?.map((t) => <option key={t._id} value={t._id}>{t.name}</option>)}
+          {terms ? terms.map((t) => <option key={t._id} value={t._id}>{t.name}</option>) : <option disabled>Loading...</option>}
         </select>
       </div>
       {students && subjectId && termId ? (

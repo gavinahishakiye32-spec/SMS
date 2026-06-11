@@ -19,7 +19,7 @@ export default function SuperAdminDashboard() {
     ? Object.entries(analytics.gradeDistribution).map(([name, value]) => ({ name, value }))
     : [];
 
-  const COLORS = ['#16A34A', '#2563EB', '#D97706', '#DC2626', '#9333EA', '#6B7280'];
+  const COLORS = ['#16A34A', '#2563EB', '#14B8A6', '#D97706', '#F97316', '#DC2626', '#6B7280'];
 
   return (
     <div className="space-y-6">

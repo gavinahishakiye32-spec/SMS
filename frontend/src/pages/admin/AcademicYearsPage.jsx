@@ -12,7 +12,7 @@ export default function AcademicYearsPage() {
 
   const { data } = useQuery({
     queryKey: ['academic-years'],
-    queryFn: () => API.get('/academic-years').then((r) => r.data),
+    queryFn: () => API.get('/academic-years').then((r) => r.data.data),
   });
 
   const createMutation = useMutation({
@@ -48,7 +48,7 @@ export default function AcademicYearsPage() {
       {editing && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => { setEditing(null); setEditYear(''); }}>
           <div className="bg-white dark:bg-gray-900 rounded-xl p-6 w-full max-w-md" onClick={(e) => e.stopPropagation()}>
-            <h2 className="text-lg font-bold mb-4">Edit Academic Year</h2>
+            <h2 className="text-lg font-bold mb-4 text-gray-900 dark:text-white">Edit Academic Year</h2>
             <div className="space-y-3">
               <input placeholder="Year (e.g., 2026)" value={editYear} onChange={(e) => setEditYear(e.target.value)}
                 className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
@@ -61,12 +61,12 @@ export default function AcademicYearsPage() {
         </div>
       )}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {data?.data?.map((y) => (
+        {data?.map((y) => (
           <div key={y._id} className={`bg-white dark:bg-gray-900 rounded-xl shadow p-5 ${y.isActive ? 'ring-2 ring-green-500' : ''}`}>
             <div className="flex justify-between items-start">
               <div>
                 <h3 className="text-lg font-bold text-gray-900 dark:text-white">{y.year}</h3>
-                <p className={`text-sm ${y.isActive ? 'text-green-600 font-semibold' : 'text-gray-400'}`}>
+                <p className={`text-sm ${y.isActive ? 'text-green-600 font-semibold' : 'text-gray-400 dark:text-gray-400'}`}>
                   {y.isActive ? 'Active' : 'Inactive'}
                 </p>
               </div>

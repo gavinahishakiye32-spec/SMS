@@ -114,18 +114,11 @@ export default function MarksPage() {
                     <td className="p-3 text-gray-700 dark:text-gray-300">{m.subjectId?.name}</td>
                     <td className="p-3 text-gray-700 dark:text-gray-300">{m.classId?.name}</td>
                     <td className="p-3 text-gray-700 dark:text-gray-300">{m.termId?.name}</td>
-                    <td className="p-3 text-gray-700 dark:text-gray-300">{m.midtermMarks ?? '-'}</td>
-                    <td className="p-3 text-gray-700 dark:text-gray-300">{m.endTermMarks ?? '-'}</td>
-                    <td className="p-3 font-medium">{m.subjectAverage?.toFixed(1) || '-'}</td>
+                    <td className={`p-3 ${m.midtermMarks != null ? (m.midtermMarks >= 40 ? 'text-green-600 dark:text-green-400 font-medium' : 'text-red-600 dark:text-red-400 font-medium') : 'text-gray-700 dark:text-gray-300'}`}>{m.midtermMarks ?? '-'}</td>
+                    <td className={`p-3 ${m.endTermMarks != null ? (m.endTermMarks >= 40 ? 'text-green-600 dark:text-green-400 font-medium' : 'text-red-600 dark:text-red-400 font-medium') : 'text-gray-700 dark:text-gray-300'}`}>{m.endTermMarks ?? '-'}</td>
+                    <td className={`p-3 font-medium ${m.subjectAverage >= 40 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>{m.subjectAverage?.toFixed(1) || '-'}</td>
                     <td className="p-3">
-                      <span className={`px-2 py-0.5 rounded text-xs font-bold ${
-                        m.grade === 'A' ? 'bg-green-100 text-green-700' :
-                        m.grade === 'B' ? 'bg-blue-100 text-blue-700' :
-                        m.grade === 'C' ? 'bg-yellow-100 text-yellow-700' :
-                        m.grade === 'D' ? 'bg-orange-100 text-orange-700' :
-                        m.grade === 'E' ? 'bg-red-100 text-red-700' :
-                        'bg-red-200 text-red-800'
-                      }`}>{m.grade || '-'}</span>
+                      <span className="px-2 py-0.5 rounded text-xs font-bold bg-green-100 text-green-700 ring-1 ring-green-400 dark:bg-green-900/40 dark:text-green-300 dark:ring-green-600">{m.grade || '-'}</span>
                     </td>
                   </tr>
                 ))
@@ -142,7 +135,7 @@ export default function MarksPage() {
       </div>
       {data?.pagination && (
         <div className="flex flex-col sm:flex-row justify-between items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-          <span>Page {data.pagination.page} of {data.pagination.totalPages} ({data.pagination.total} total)</span>
+          <span className="dark:text-gray-300">Page {data.pagination.page} of {data.pagination.totalPages} ({data.pagination.total} total)</span>
           <div className="flex gap-2">
             <button disabled={page <= 1} onClick={() => setPage((p) => p - 1)} className="px-3 py-1 border rounded-lg disabled:opacity-50 disabled:cursor-not-allowed bg-white dark:bg-gray-800 text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700">Prev</button>
             <button disabled={page >= data.pagination.totalPages} onClick={() => setPage((p) => p + 1)} className="px-3 py-1 border rounded-lg disabled:opacity-50 disabled:cursor-not-allowed bg-white dark:bg-gray-800 text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700">Next</button>

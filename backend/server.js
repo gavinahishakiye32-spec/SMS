@@ -32,6 +32,7 @@ app.use('/api/terms', require('./routes/termRoutes'));
 app.use('/api/reports', require('./routes/reportRoutes'));
 app.use('/api/analytics', require('./routes/analyticsRoutes'));
 app.use('/api/suggestions', require('./routes/suggestionRoutes'));
+app.use('/api/settings', require('./routes/settingRoutes'));
 
 app.get('/', (req, res) => {
   res.json({ message: 'SMS API is running' });

@@ -89,7 +89,7 @@ export default function SubjectsPage() {
       {showForm && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => { setShowForm(false); setEditing(null); }}>
           <div className="bg-white dark:bg-gray-900 rounded-xl p-6 w-full max-w-md" onClick={(e) => e.stopPropagation()}>
-            <h2 className="text-lg font-bold mb-4">{editing ? 'Edit Subject' : 'Add Subject'}</h2>
+            <h2 className="text-lg font-bold mb-4 text-gray-900 dark:text-white">{editing ? 'Edit Subject' : 'Add Subject'}</h2>
             <form onSubmit={handleSubmit} className="space-y-3">
               <input placeholder="Subject Name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })}
                 className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white" required />
@@ -106,7 +106,7 @@ export default function SubjectsPage() {
                       {c.name}
                     </label>
                   ))}
-                  {filteredClasses.length === 0 && <span className="text-xs text-gray-400">No classes for this level</span>}
+                  {filteredClasses.length === 0 && <span className="text-xs text-gray-400 dark:text-gray-400">No classes for this level</span>}
                 </div>
               </div>
               <div className="flex gap-3">
@@ -150,11 +150,11 @@ export default function SubjectsPage() {
       {showAssign && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setShowAssign(null)}>
           <div className="bg-white dark:bg-gray-900 rounded-xl p-6 w-full max-w-md" onClick={(e) => e.stopPropagation()}>
-            <h2 className="text-lg font-bold mb-4">Assign Teacher {assigningSubject ? `(${assigningSubject.name})` : ''}</h2>
+            <h2 className="text-lg font-bold mb-4 text-gray-900 dark:text-white">Assign Teacher {assigningSubject ? `(${assigningSubject.name})` : ''}</h2>
             <select value={assignTeacherId} onChange={(e) => setAssignTeacherId(e.target.value)}
               className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white mb-4">
               <option value="">Select Teacher</option>
-              {teachers?.filter((t) => !assigningSubject || !t.level || t.level === assigningSubject.level).map((t) => <option key={t._id} value={t._id}>{t.firstName} {t.lastName}{t.level ? ` (${t.level})` : ''}</option>)}
+              {teachers ? teachers.filter((t) => !assigningSubject || !t.level || t.level === assigningSubject.level).map((t) => <option key={t._id} value={t._id}>{t.firstName} {t.lastName}</option>) : <option disabled>Loading...</option>}
             </select>
             <div className="flex gap-3">
               <button onClick={() => handleAssign(showAssign)} className="px-4 py-2 bg-blue-600 text-white rounded-lg">Assign</button>

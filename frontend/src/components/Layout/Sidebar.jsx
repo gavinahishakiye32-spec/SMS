@@ -15,12 +15,13 @@ const superAdminLinks = [
   { to: '/admin/reports', label: 'Reports', icon: '📄' },
   { to: '/admin/analytics', label: 'Analytics', icon: '📈' },
   { to: '/admin/suggestions', label: 'Suggestions', icon: '💡' },
+  { to: '/admin/settings', label: 'Settings', icon: '⚙️' },
 ];
 
 const teacherLinks = [
   { to: '/teacher/dashboard', label: 'Dashboard', icon: '📊' },
   { to: '/teacher/subjects', label: 'My Subjects', icon: '📚' },
-  { to: '/teacher/students', label: 'Students', icon: '👨‍🎓' },
+  { to: '/admin/students', label: 'Students', icon: '👨‍🎓' },
   { to: '/teacher/marks', label: 'Marks Entry', icon: '✅' },
 ];
 

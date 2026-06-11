@@ -87,6 +87,12 @@ const deleteSuggestion = asyncHandler(async (req, res) => {
       message: 'Suggestion not found',
     });
   }
+  if (req.user.role === 'teacher' && suggestion.authorId.toString() !== req.user._id.toString()) {
+    return res.status(403).json({
+      success: false,
+      message: 'You do not have permission to delete this suggestion',
+    });
+  }
   await Suggestion.deleteOne({ _id: suggestion._id });
   return res.json({
     success: true,

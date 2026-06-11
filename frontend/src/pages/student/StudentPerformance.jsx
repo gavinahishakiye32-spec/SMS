@@ -42,15 +42,15 @@ export default function StudentPerformance() {
       <h1 className="text-2xl font-bold text-gray-900 dark:text-white">My Performance</h1>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-white dark:bg-gray-900 rounded-xl shadow p-5">
-          <p className="text-sm text-gray-500">Class Rank</p>
+          <p className="text-sm text-gray-500 dark:text-gray-300">Class Rank</p>
           <p className="text-2xl font-bold text-blue-600">#{ranking?.rank || '-'} / {ranking?.total || '-'}</p>
         </div>
         <div className="bg-white dark:bg-gray-900 rounded-xl shadow p-5">
-          <p className="text-sm text-gray-500">Subjects</p>
+          <p className="text-sm text-gray-500 dark:text-gray-300">Subjects</p>
           <p className="text-2xl font-bold text-teal-600">{marks?.length || 0}</p>
         </div>
         <div className="bg-white dark:bg-gray-900 rounded-xl shadow p-5">
-          <p className="text-sm text-gray-500">Student Code</p>
+          <p className="text-sm text-gray-500 dark:text-gray-300">Student Code</p>
           <p className="text-2xl font-bold text-gray-900 dark:text-white">{profile?.studentCode}</p>
         </div>
       </div>

@@ -1,10 +1,11 @@
 function calculateGrade(average) {
-  if (average >= 80) return 'A';
-  if (average >= 70) return 'B';
-  if (average >= 60) return 'C';
-  if (average >= 50) return 'D';
-  if (average >= 40) return 'E';
-  return 'F';
+  if (average >= 90) return 'Excellent';
+  if (average >= 80) return 'V.Good';
+  if (average >= 70) return 'Good';
+  if (average >= 60) return 'F.Good';
+  if (average >= 50) return 'Tried';
+  if (average >= 40) return 'Improve';
+  return 'Failed';
 }
 
 function calculateSubjectAverage(midterm, endTerm) {

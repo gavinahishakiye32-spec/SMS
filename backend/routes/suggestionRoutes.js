@@ -13,6 +13,6 @@ router.post('/:id/like', protect, authorizeRoles('superadmin', 'schooladmin', 't
 router.route('/:id')
   .get(protect, authorizeRoles('superadmin', 'schooladmin', 'teacher'), getSuggestionById)
   .put(protect, authorizeRoles('superadmin', 'schooladmin', 'teacher'), updateSuggestion)
-  .delete(protect, authorizeRoles('superadmin', 'schooladmin'), deleteSuggestion);
+  .delete(protect, authorizeRoles('superadmin', 'schooladmin', 'teacher'), deleteSuggestion);
 
 module.exports = router;

@@ -29,7 +29,7 @@ export default function TeacherSubjects() {
           {subjectList.map((s) => (
             <div key={s._id} className="bg-white dark:bg-gray-900 rounded-xl shadow p-5">
               <h3 className="text-lg font-bold text-gray-900 dark:text-white">{s.name}</h3>
-              <p className="text-sm text-gray-500">{s.level}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">{s.level}</p>
               <div className="mt-2 flex flex-wrap gap-1">
                 {s.classIds?.map((c) => (
                   <span key={c._id} className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded">{c.name}</span>

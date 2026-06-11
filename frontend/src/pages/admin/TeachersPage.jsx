@@ -84,7 +84,7 @@ export default function TeachersPage() {
       {showForm && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setShowForm(false)}>
           <div className="bg-white dark:bg-gray-900 rounded-xl p-6 w-full max-w-lg max-h-[80vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-            <h2 className="text-lg font-bold mb-4">{editing ? 'Edit Teacher' : 'Add Teacher'}</h2>
+            <h2 className="text-lg font-bold mb-4 text-gray-900 dark:text-white">{editing ? 'Edit Teacher' : 'Add Teacher'}</h2>
             <form onSubmit={handleSubmit} className="space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 <input placeholder="First Name" value={form.firstName} onChange={(e) => setForm({ ...form, firstName: e.target.value })} className="px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white" required />
@@ -138,13 +138,13 @@ export default function TeachersPage() {
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
               {isLoading ? (
-                <tr><td colSpan={8} className="p-4 text-center text-gray-500">Loading...</td></tr>
+                <tr><td colSpan={8} className="p-4 text-center text-gray-500 dark:text-gray-400">Loading...</td></tr>
               ) : data?.data?.length === 0 ? (
-                <tr><td colSpan={8} className="p-4 text-center text-gray-500">No teachers found</td></tr>
+                <tr><td colSpan={8} className="p-4 text-center text-gray-500 dark:text-gray-400">No teachers found</td></tr>
               ) : data?.data?.map((t) => (
                 <tr key={t._id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
                   <td className="p-3 font-medium text-gray-900 dark:text-white">{t.firstName} {t.lastName}</td>
-                  <td className="p-3"><span className={`text-xs font-semibold px-2 py-1 rounded ${t.level === 'O-Level' ? 'bg-green-100 text-green-700' : t.level === 'A-Level' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-500'}`}>{t.level || '-'}</span></td>
+                  <td className="p-3"><span className={`text-xs font-semibold px-2 py-1 rounded ${t.level === 'O-Level' ? 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300' : t.level === 'A-Level' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300' : 'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-300'}`}>{t.level || '-'}</span></td>
                   <td className="p-3 text-gray-700 dark:text-gray-300">{t.gender}</td>
                   <td className="p-3 text-gray-700 dark:text-gray-300">{t.NIN || '-'}</td>
                   <td className="p-3 text-gray-700 dark:text-gray-300">{t.email}</td>
@@ -164,11 +164,11 @@ export default function TeachersPage() {
         </div>
       </div>
       {data?.pagination && (
-        <div className="flex flex-col sm:flex-row justify-between items-center gap-2 text-sm text-gray-600">
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
           <span>Page {data.pagination.page} of {data.pagination.totalPages}</span>
           <div className="flex gap-2">
-            <button disabled={page <= 1} onClick={() => setPage((p) => p - 1)} className="px-3 py-1 border rounded-lg disabled:opacity-50">Prev</button>
-            <button disabled={page >= data.pagination.totalPages} onClick={() => setPage((p) => p + 1)} className="px-3 py-1 border rounded-lg disabled:opacity-50">Next</button>
+            <button disabled={page <= 1} onClick={() => setPage((p) => p - 1)} className="px-3 py-1 border rounded-lg disabled:opacity-50 bg-white dark:bg-gray-800 text-gray-900 dark:text-white">Prev</button>
+            <button disabled={page >= data.pagination.totalPages} onClick={() => setPage((p) => p + 1)} className="px-3 py-1 border rounded-lg disabled:opacity-50 bg-white dark:bg-gray-800 text-gray-900 dark:text-white">Next</button>
           </div>
         </div>
       )}

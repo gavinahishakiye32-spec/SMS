@@ -49,15 +49,15 @@ export default function StudentDashboard() {
           {report?.report ? (
             <div>
               <p className="text-3xl font-bold text-blue-600">{report.report.overallAverage?.toFixed(1)}%</p>
-              <p className="text-sm text-gray-500">Overall Average</p>
-              <p>Grade: <strong>{report.report.grade}</strong></p>
+              <p className="text-sm text-gray-500 dark:text-gray-300">Overall Average</p>
+              <p>Grade: <strong className="text-green-600 dark:text-green-400">{report.report.grade}</strong></p>
               <p>Rank: <strong>#{report.report.classRank}</strong> in class</p>
               <p className={`font-bold ${report.report.remarks === 'Pass' ? 'text-green-600' : 'text-red-600'}`}>
                 {report.report.remarks}
               </p>
             </div>
           ) : (
-            <p className="text-gray-400 text-sm">No report available yet</p>
+            <p className="text-gray-400 dark:text-gray-400 text-sm">No report available yet</p>
           )}
         </div>
       </div>

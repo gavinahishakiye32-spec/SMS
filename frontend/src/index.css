@@ -2,13 +2,14 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 html {
-  transition: background-color 0.3s, color 0.3s;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-*,
-*::before,
-*::after {
-  transition: background-color 0.2s, border-color 0.2s;
+html.dark,
+html.dark *,
+html.dark *::before,
+html.dark *::after {
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.15s ease;
 }
 
 @keyframes slide-up {
@@ -19,20 +20,40 @@ html {
   animation: slide-up 0.3s ease-out;
 }
 
+@page {
+  margin: 12mm;
+  size: A4;
+}
+
 @media print {
-  header, aside, footer, nav, .print\:hidden { display: none !important; }
-  body { background: white !important; }
+  header, aside, footer, nav { display: none !important; }
+  body {
+    background: white !important;
+    color: black !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
   #report-card {
     box-shadow: none !important;
     padding: 0 !important;
-    margin: 0 !important;
+    margin: 0 auto !important;
     border: none !important;
+    max-width: 100% !important;
   }
   #school-logo .print-hide { display: none !important; }
   table { page-break-inside: auto; }
+  thead { display: table-header-group; }
   tr { page-break-inside: avoid; }
+  h2, h3 { page-break-after: avoid; }
+  h3 { page-break-before: avoid; }
   .text-center h2:first-child { font-size: 1.5rem !important; }
   .no-print, .print\:hidden, button, a[target="_blank"] { display: none !important; }
   .grid.grid-cols-2 { grid-template-columns: 1fr 1fr !important; }
-  body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .text-gray-500, .text-gray-600, .text-gray-700,
+  .dark\:text-gray-300, .dark\:text-gray-400 { color: black !important; }
+  .text-green-600, .dark\:text-green-400 { color: #15803d !important; }
+  .text-red-600, .dark\:text-red-400 { color: #dc2626 !important; }
+  .text-blue-600 { color: #2563eb !important; }
+  .border-gray-200, .dark\:border-gray-700 { border-color: #d1d5db !important; }
+  .bg-gray-50, .dark\:bg-gray-800 { background: #f9fafb !important; }
 }

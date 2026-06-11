@@ -45,7 +45,7 @@ export default function SuggestionsPage() {
       </div>
       {showForm && (
         <div className="bg-white dark:bg-gray-900 rounded-xl shadow p-5">
-          <h2 className="text-lg font-bold mb-4">New Suggestion</h2>
+          <h2 className="text-lg font-bold mb-4 text-gray-900 dark:text-white">New Suggestion</h2>
           <div className="space-y-3">
             <input placeholder="Title" value={title} onChange={(e) => setTitle(e.target.value)}
               className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
@@ -53,7 +53,7 @@ export default function SuggestionsPage() {
               className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
             <div className="flex gap-3">
               <button onClick={createMutation.mutate} className="px-4 py-2 bg-blue-600 text-white rounded-lg">Submit</button>
-              <button onClick={() => setShowForm(false)} className="px-4 py-2 bg-gray-200 rounded-lg">Cancel</button>
+              <button onClick={() => setShowForm(false)} className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg">Cancel</button>
             </div>
           </div>
         </div>

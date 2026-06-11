@@ -125,7 +125,29 @@ const searchReports = asyncHandler(async (req, res) => {
       studentQuery.$or.push({ _id: q });
     }
   }
-  if (classId) studentQuery.classId = classId;
+  if (classId) {
+    studentQuery.classId = classId;
+  }
+  if (req.user.role === 'teacher') {
+    const teacher = await Teacher.findOne({ userId: req.user._id }).populate({ path: 'subjectIds', select: 'classIds' });
+    if (teacher) {
+      const classIdSet = new Set();
+      for (const subject of teacher.subjectIds) {
+        for (const cid of subject.classIds) classIdSet.add(cid.toString());
+      }
+      const allowedClassIds = [...classIdSet];
+      const specificClassId = typeof studentQuery.classId === 'string' ? studentQuery.classId : null;
+      if (specificClassId) {
+        if (!allowedClassIds.includes(specificClassId)) {
+          return res.status(403).json({ success: false, message: 'You do not have permission to search reports for this class' });
+        }
+      } else if (allowedClassIds.length > 0) {
+        studentQuery.classId = { $in: allowedClassIds };
+      } else {
+        studentQuery.classId = { $in: [] };
+      }
+    }
+  }
 
   const students = await Student.find(studentQuery)
     .populate('classId', 'name level')

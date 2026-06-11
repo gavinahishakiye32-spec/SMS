@@ -18,9 +18,9 @@ import MarksPage from './pages/admin/MarksPage';
 import ReportsPage from './pages/admin/ReportsPage';
 import AnalyticsPage from './pages/admin/AnalyticsPage';
 import SuggestionsPage from './pages/admin/SuggestionsPage';
+import SchoolSettingsPage from './pages/admin/SchoolSettingsPage';
 import TeacherDashboard from './pages/teacher/TeacherDashboard';
 import TeacherMarks from './pages/teacher/TeacherMarks';
-import TeacherStudents from './pages/teacher/TeacherStudents';
 import TeacherSubjects from './pages/teacher/TeacherSubjects';
 import StudentDashboard from './pages/student/StudentDashboard';
 import StudentReport from './pages/student/StudentReport';
@@ -56,25 +56,25 @@ export default function App() {
       <Route path="/change-password" element={<ProtectedRoute><ChangePassword /></ProtectedRoute>} />
       <Route path="/" element={<DashboardRedirect />} />
       <Route path="/dashboard" element={<DashboardRedirect />} />
-      <Route path="/admin" element={<ProtectedRoute roles={['superadmin', 'schooladmin']}><MainLayout /></ProtectedRoute>}>
-        <Route path="dashboard" element={<AdminDashboardSwitch />} />
+      <Route path="/admin" element={<ProtectedRoute roles={['superadmin', 'schooladmin', 'teacher']}><MainLayout /></ProtectedRoute>}>
+        <Route path="dashboard" element={<ProtectedRoute roles={['superadmin', 'schooladmin']}><AdminDashboardSwitch /></ProtectedRoute>} />
         <Route path="students" element={<StudentsPage />} />
-        <Route path="teachers" element={<TeachersPage />} />
-        <Route path="parents" element={<ParentsPage />} />
-        <Route path="classes" element={<ClassesPage />} />
-        <Route path="sections" element={<SectionsPage />} />
-        <Route path="subjects" element={<SubjectsPage />} />
-        <Route path="academic-years" element={<AcademicYearsPage />} />
-        <Route path="terms" element={<TermsPage />} />
-        <Route path="marks" element={<MarksPage />} />
-        <Route path="reports" element={<ReportsPage />} />
-        <Route path="analytics" element={<AnalyticsPage />} />
-        <Route path="suggestions" element={<SuggestionsPage />} />
+        <Route path="teachers" element={<ProtectedRoute roles={['superadmin', 'schooladmin']}><TeachersPage /></ProtectedRoute>} />
+        <Route path="parents" element={<ProtectedRoute roles={['superadmin', 'schooladmin']}><ParentsPage /></ProtectedRoute>} />
+        <Route path="classes" element={<ProtectedRoute roles={['superadmin', 'schooladmin']}><ClassesPage /></ProtectedRoute>} />
+        <Route path="sections" element={<ProtectedRoute roles={['superadmin', 'schooladmin']}><SectionsPage /></ProtectedRoute>} />
+        <Route path="subjects" element={<ProtectedRoute roles={['superadmin', 'schooladmin']}><SubjectsPage /></ProtectedRoute>} />
+        <Route path="academic-years" element={<ProtectedRoute roles={['superadmin', 'schooladmin']}><AcademicYearsPage /></ProtectedRoute>} />
+        <Route path="terms" element={<ProtectedRoute roles={['superadmin', 'schooladmin']}><TermsPage /></ProtectedRoute>} />
+        <Route path="marks" element={<ProtectedRoute roles={['superadmin', 'schooladmin']}><MarksPage /></ProtectedRoute>} />
+        <Route path="reports" element={<ProtectedRoute roles={['superadmin', 'schooladmin']}><ReportsPage /></ProtectedRoute>} />
+        <Route path="analytics" element={<ProtectedRoute roles={['superadmin', 'schooladmin']}><AnalyticsPage /></ProtectedRoute>} />
+        <Route path="suggestions" element={<ProtectedRoute roles={['superadmin', 'schooladmin']}><SuggestionsPage /></ProtectedRoute>} />
+        <Route path="settings" element={<ProtectedRoute roles={['superadmin', 'schooladmin']}><SchoolSettingsPage /></ProtectedRoute>} />
       </Route>
       <Route path="/teacher" element={<ProtectedRoute roles={['teacher']}><MainLayout /></ProtectedRoute>}>
         <Route path="dashboard" element={<TeacherDashboard />} />
         <Route path="marks" element={<TeacherMarks />} />
-        <Route path="students" element={<TeacherStudents />} />
         <Route path="subjects" element={<TeacherSubjects />} />
       </Route>
       <Route path="/student" element={<ProtectedRoute roles={['student']}><MainLayout /></ProtectedRoute>}>

@@ -51,16 +51,16 @@ export default function SectionsPage() {
       {showForm && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => { setShowForm(false); setEditing(null); }}>
           <div className="bg-white dark:bg-gray-900 rounded-xl p-6 w-full max-w-md" onClick={(e) => e.stopPropagation()}>
-            <h2 className="text-lg font-bold mb-4">{editing ? 'Edit Section' : 'Add Section'}</h2>
+            <h2 className="text-lg font-bold mb-4 text-gray-900 dark:text-white">{editing ? 'Edit Section' : 'Add Section'}</h2>
             <form onSubmit={handleSubmit} className="space-y-3">
               <input placeholder="Section Name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })}
                 className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white" required />
               <select value={form.classId} onChange={(e) => setForm({ ...form, classId: e.target.value })}
                 className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
                 <option value="">Select Class</option>
-                {classes?.map((c) => (
+                {classes ? classes.map((c) => (
                   <option key={c._id} value={c._id}>{c.name}</option>
-                ))}
+                )) : <option disabled>Loading...</option>}
               </select>
               <div className="flex gap-3">
                 <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg">{editing ? 'Update' : 'Create'}</button>
@@ -76,7 +76,7 @@ export default function SectionsPage() {
             <div className="flex justify-between items-start">
               <div>
                 <h3 className="text-lg font-bold text-gray-900 dark:text-white">{s.name}</h3>
-                <p className="text-sm text-gray-500">Class: {s.classId?.name || 'N/A'}</p>
+                <p className="text-sm text-gray-500 dark:text-gray-300">Class: {s.classId?.name || 'N/A'}</p>
               </div>
               <div className="flex gap-2">
                 <button onClick={() => { setForm({ name: s.name, classId: s.classId?._id || '' }); setEditing(s._id); setShowForm(true); }} className="text-blue-600 text-xs hover:underline">Edit</button>
