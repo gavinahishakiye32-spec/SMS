@@ -260,7 +260,7 @@ const getStudentReportPdf = asyncHandler(async (req, res) => {
 
   drawLine(doc.y + 4);
   doc.moveDown(0.5);
-  header('SUBJECT PERFORMANCE', 12);
+  header('Academic Performance', 12);
   doc.moveDown(0.3);
 
   const tableTop = doc.y;
@@ -273,8 +273,8 @@ const getStudentReportPdf = asyncHandler(async (req, res) => {
 
   doc.fontSize(9).font('Helvetica-Bold');
   doc.text('Subject', col1, tableTop);
-  doc.text('Midterm', col2, tableTop, { width: 60, align: 'center' });
-  doc.text('End-Term', col3, tableTop, { width: 60, align: 'center' });
+  doc.text('Mid-Term/100', col2, tableTop, { width: 60, align: 'center' });
+  doc.text('End-Term/100', col3, tableTop, { width: 60, align: 'center' });
   doc.text('Average', col4, tableTop, { width: 60, align: 'center' });
   doc.text('Grade', col5, tableTop, { width: 50, align: 'center' });
   doc.font('Helvetica');
@@ -288,7 +288,7 @@ const getStudentReportPdf = asyncHandler(async (req, res) => {
     doc.text(m.subjectId ? m.subjectId.name : 'N/A', col1, rowY);
     doc.text(m.midtermMarks != null ? String(m.midtermMarks) : '-', col2, rowY, { width: 60, align: 'center' });
     doc.text(m.endTermMarks != null ? String(m.endTermMarks) : '-', col3, rowY, { width: 60, align: 'center' });
-    doc.text(m.subjectAverage != null ? m.subjectAverage.toFixed(1) : '-', col4, rowY, { width: 60, align: 'center' });
+    doc.text(m.subjectAverage != null ? m.subjectAverage.toFixed(0) : '-', col4, rowY, { width: 60, align: 'center' });
     doc.text(m.grade || '-', col5, rowY, { width: 50, align: 'center' });
     rowY += rowH;
     if ((i + 1) % 2 === 0) {
@@ -307,12 +307,20 @@ const getStudentReportPdf = asyncHandler(async (req, res) => {
     header('OVERALL PERFORMANCE', 12);
     doc.moveDown(0.3);
     doc.fontSize(10);
-    doc.text(`Midterm Total: ${r.midtermTotal}    |    Midterm Average: ${r.midtermAverage ? r.midtermAverage.toFixed(1) : '0.0'}`);
-    doc.text(`End-Term Total: ${r.endTermTotal}    |    End-Term Average: ${r.endTermAverage ? r.endTermAverage.toFixed(1) : '0.0'}`);
-    doc.text(`Combined Total: ${r.combinedTotal ? r.combinedTotal.toFixed(1) : '0.0'}    |    Overall Average: ${r.overallAverage ? r.overallAverage.toFixed(1) : '0.0'}`);
+    const totalLabel = `Total Marks: ${((r.midtermTotal || 0) + (r.endTermTotal || 0)).toFixed(0)}`;
+    const avgLabel = `Average: ${r.overallAverage ? r.overallAverage.toFixed(0) : '0'}`;
+    const rankLabel = `Class Position: ${r.classRank || '?'}${r.totalStudentsInClass != null ? ' out of ' + r.totalStudentsInClass : ''}`;
+    const schoolRankLabel = `School Position: ${r.schoolRank || '?'}${r.totalStudentsInSchool != null ? ' out of ' + r.totalStudentsInSchool : ''}`;
+    doc.text(`${totalLabel}    |    ${avgLabel}`);
     doc.moveDown(0.3);
     doc.font('Helvetica-Bold').fontSize(11);
-    doc.text(`Grade: ${r.grade}   |   Remarks: ${r.remarks}   |   Class Rank: ${r.classRank}   |   School Rank: ${r.schoolRank}`, { align: 'center' });
+    doc.text(`Result: ${r.grade}   |   ${rankLabel}   |   ${schoolRankLabel}`, { align: 'center' });
+    doc.moveDown(0.2);
+    const passed = r.remarks === 'Pass';
+    doc.fontSize(12);
+    doc.fillColor(passed ? 'green' : 'red');
+    doc.text(passed ? 'PASSED' : 'FAILED', { align: 'center' });
+    doc.fillColor('black');
     doc.font('Helvetica');
     drawLine(doc.y + 4);
     doc.moveDown(0.5);

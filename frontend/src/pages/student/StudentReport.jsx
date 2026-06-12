@@ -32,9 +32,9 @@ export default function StudentReport() {
   return (
     <div className="space-y-4">
       <h1 className="text-2xl font-bold text-gray-900 dark:text-white">My Report Card</h1>
-      <div className="flex flex-wrap gap-3">
+      <div className="flex flex-col sm:flex-row flex-wrap gap-3">
         <select value={termId} onChange={(e) => setTermId(e.target.value)}
-          className="px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+          className="w-full sm:w-auto px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
           <option value="">Latest Report</option>
           {terms?.map((t) => <option key={t._id} value={t._id}>{t.name}</option>)}
         </select>
@@ -61,55 +61,45 @@ export default function StudentReport() {
               <p><strong className="text-gray-900 dark:text-white">Class:</strong> {report.student?.classId?.name} {report.student?.sectionId?.name || ''}</p>
             </div>
           </div>
-          <h3 className="font-bold text-lg mb-2 text-gray-900 dark:text-white">Midterm Performance</h3>
+          <h3 className="font-bold text-lg mb-2 text-gray-900 dark:text-white">Academic Performance</h3>
           <table className="w-full text-sm mb-4 border">
-            <thead><tr className="bg-gray-50 dark:bg-gray-800"><th className="border p-2 text-left text-gray-700 dark:text-gray-300">Subject</th><th className="border p-2 text-gray-700 dark:text-gray-300">Marks</th><th className="border p-2 text-gray-700 dark:text-gray-300">Grade</th></tr></thead>
-            <tbody>
-              {report.marks?.map((m) => {
-                const g = m.midtermMarks != null ? (m.midtermMarks >= 90 ? 'Excellent' : m.midtermMarks >= 80 ? 'V.Good' : m.midtermMarks >= 70 ? 'Good' : m.midtermMarks >= 60 ? 'F.Good' : m.midtermMarks >= 50 ? 'Tried' : m.midtermMarks >= 40 ? 'Improve' : 'Failed') : '-';
-                return <tr key={m._id}><td className="border p-2 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700">{m.subjectId?.name}</td><td className={`border p-2 text-center border-gray-200 dark:border-gray-700 ${m.midtermMarks != null ? (m.midtermMarks >= 40 ? 'text-green-600 dark:text-green-400 font-medium' : 'text-red-600 dark:text-red-400 font-medium') : 'text-gray-700 dark:text-gray-300'}`}>{m.midtermMarks ?? '-'}</td><td className="border p-2 text-center text-green-600 dark:text-green-400 font-bold border-gray-200 dark:border-gray-700">{g}</td></tr>;
-              })}
-            </tbody>
-          </table>
-          <p className="text-sm text-gray-700 dark:text-gray-300">Total: {report.report.midtermTotal} | Average: {report.report.midtermAverage?.toFixed(2)}</p>
-          <h3 className="font-bold text-lg mb-2 mt-4 text-gray-900 dark:text-white">End-Term Performance</h3>
-          <table className="w-full text-sm mb-4 border">
-            <thead><tr className="bg-gray-50 dark:bg-gray-800"><th className="border p-2 text-left text-gray-700 dark:text-gray-300">Subject</th><th className="border p-2 text-gray-700 dark:text-gray-300">Marks</th><th className="border p-2 text-gray-700 dark:text-gray-300">Grade</th></tr></thead>
-            <tbody>
-              {report.marks?.map((m) => {
-                const g = m.endTermMarks != null ? (m.endTermMarks >= 90 ? 'Excellent' : m.endTermMarks >= 80 ? 'V.Good' : m.endTermMarks >= 70 ? 'Good' : m.endTermMarks >= 60 ? 'F.Good' : m.endTermMarks >= 50 ? 'Tried' : m.endTermMarks >= 40 ? 'Improve' : 'Failed') : '-';
-                return <tr key={m._id}><td className="border p-2 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700">{m.subjectId?.name}</td><td className={`border p-2 text-center border-gray-200 dark:border-gray-700 ${m.endTermMarks != null ? (m.endTermMarks >= 40 ? 'text-green-600 dark:text-green-400 font-medium' : 'text-red-600 dark:text-red-400 font-medium') : 'text-gray-700 dark:text-gray-300'}`}>{m.endTermMarks ?? '-'}</td><td className="border p-2 text-center text-green-600 dark:text-green-400 font-bold border-gray-200 dark:border-gray-700">{g}</td></tr>;
-              })}
-            </tbody>
-          </table>
-          <p className="text-sm text-gray-700 dark:text-gray-300">Total: {report.report.endTermTotal} | Average: {report.report.endTermAverage?.toFixed(2)}</p>
-          <h3 className="font-bold text-lg mb-2 mt-4 text-gray-900 dark:text-white">Overall Performance</h3>
-          <table className="w-full text-sm mb-4 border">
-            <thead><tr className="bg-gray-50 dark:bg-gray-800"><th className="border p-2 text-left text-gray-700 dark:text-gray-300">Subject</th><th className="border p-2 text-gray-700 dark:text-gray-300">Mid</th><th className="border p-2 text-gray-700 dark:text-gray-300">End</th><th className="border p-2 text-gray-700 dark:text-gray-300">Avg</th><th className="border p-2 text-gray-700 dark:text-gray-300">Grade</th></tr></thead>
+            <thead><tr className="bg-gray-50 dark:bg-gray-800"><th className="border p-2 text-left text-gray-700 dark:text-gray-300">Subject</th><th className="border p-2 text-gray-700 dark:text-gray-300">Mid-Term/100</th><th className="border p-2 text-gray-700 dark:text-gray-300">End-Term/100</th><th className="border p-2 text-gray-700 dark:text-gray-300">Average</th><th className="border p-2 text-gray-700 dark:text-gray-300">Grade</th></tr></thead>
             <tbody>
               {report.marks?.map((m) => (
                 <tr key={m._id}>
                   <td className="border p-2 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700">{m.subjectId?.name}</td>
                   <td className={`border p-2 text-center border-gray-200 dark:border-gray-700 ${m.midtermMarks != null ? (m.midtermMarks >= 40 ? 'text-green-600 dark:text-green-400 font-medium' : 'text-red-600 dark:text-red-400 font-medium') : 'text-gray-700 dark:text-gray-300'}`}>{m.midtermMarks ?? '-'}</td>
                   <td className={`border p-2 text-center border-gray-200 dark:border-gray-700 ${m.endTermMarks != null ? (m.endTermMarks >= 40 ? 'text-green-600 dark:text-green-400 font-medium' : 'text-red-600 dark:text-red-400 font-medium') : 'text-gray-700 dark:text-gray-300'}`}>{m.endTermMarks ?? '-'}</td>
-                  <td className={`border p-2 text-center border-gray-200 dark:border-gray-700 ${m.subjectAverage >= 40 ? 'text-green-600 dark:text-green-400 font-medium' : 'text-red-600 dark:text-red-400 font-medium'}`}>{m.subjectAverage?.toFixed(1) || '-'}</td>
-                  <td className="border p-2 text-center text-green-600 dark:text-green-400 font-bold border-gray-200 dark:border-gray-700">{m.grade || '-'}</td>
+                  <td className={`border p-2 text-center border-gray-200 dark:border-gray-700 ${m.subjectAverage >= 40 ? 'text-green-600 dark:text-green-400 font-medium' : 'text-red-600 dark:text-red-400 font-medium'}`}>{m.subjectAverage?.toFixed(0) || '-'}</td>
+                  <td className="border p-2 text-center font-bold border-gray-200 dark:border-gray-700">
+                    <span className={`inline-block px-2 py-0.5 rounded text-xs font-bold ${m.grade === 'A' ? 'bg-green-100 text-green-700' : m.grade === 'B' ? 'bg-blue-100 text-blue-700' : m.grade === 'C' ? 'bg-yellow-100 text-yellow-700' : m.grade === 'D' ? 'bg-orange-100 text-orange-700' : m.grade === 'E' ? 'bg-red-100 text-red-700' : m.grade === 'F' ? 'bg-red-200 text-red-800' : 'bg-gray-100 text-gray-500'}`}>
+                      {m.grade || '-'}
+                    </span>
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
           <div className="grid grid-cols-2 gap-4 text-sm text-gray-700 dark:text-gray-300">
             <div>
-              <p><strong className="text-gray-900 dark:text-white">Combined Total:</strong> {report.report.combinedTotal?.toFixed(2)}</p>
-              <p><strong className="text-gray-900 dark:text-white">Overall Average:</strong> {report.report.overallAverage?.toFixed(2)}</p>
-              <p><strong className="text-gray-900 dark:text-white">Grade:</strong> <span className="text-green-600 dark:text-green-400 font-bold">{report.report.grade}</span></p>
-              <p><strong className="text-gray-900 dark:text-white">Remarks:</strong> <span className={`px-3 py-1 rounded-full text-sm font-bold ${
-                report.report.remarks === 'Pass' ? 'bg-green-100 text-green-700 ring-1 ring-green-400 dark:bg-green-900/40 dark:text-green-300 dark:ring-green-600' : 'bg-red-100 text-red-700 ring-1 ring-red-400 dark:bg-red-900/40 dark:text-red-300 dark:ring-red-600'
-              }`}>{report.report.remarks}</span></p>
+              <p><strong className="text-gray-900 dark:text-white">Total Marks:</strong> <span className="text-lg font-bold text-blue-600">{((report.report.midtermTotal || 0) + (report.report.endTermTotal || 0)).toFixed(0)}</span></p>
+              <p><strong className="text-gray-900 dark:text-white">Average:</strong> <span className="text-lg font-bold text-blue-600">{report.report.overallAverage?.toFixed(0) || '0'}</span></p>
+              <p><strong className="text-gray-900 dark:text-white">Result:</strong> <span className="text-green-600 dark:text-green-400 font-bold text-lg">{report.report.grade}</span></p>
+              <p><strong className="text-gray-900 dark:text-white">Remarks:</strong>{' '}
+                {report.report.remarks === 'Pass' ? (
+                  <span className="inline-block px-3 py-1 rounded-full bg-green-100 text-green-700 font-bold text-sm">PASSED</span>
+                ) : (
+                  <span className="inline-block px-3 py-1 rounded-full bg-red-100 text-red-700 font-bold text-sm">FAILED</span>
+                )}
+              </p>
             </div>
-            <div>
-              <p><strong className="text-gray-900 dark:text-white">Class Rank:</strong> {report.report.classRank}</p>
-              <p><strong className="text-gray-900 dark:text-white">School Rank:</strong> {report.report.schoolRank}</p>
+            <div className="text-right">
+              <p><strong className="text-gray-900 dark:text-white">Class Position:</strong>{' '}
+                <span className="text-lg font-bold text-purple-600">
+                  {report.report.classRank}{report.report.totalStudentsInClass != null ? ` out of ${report.report.totalStudentsInClass}` : ''}
+                </span>
+              </p>
+              <p><strong className="text-gray-900 dark:text-white">School Position:</strong> <span className="text-lg font-bold text-purple-600">{report.report.schoolRank}{report.report.totalStudentsInSchool != null ? ` out of ${report.report.totalStudentsInSchool}` : ''}</span></p>
             </div>
           </div>
           {report.report.teacherRemark && (

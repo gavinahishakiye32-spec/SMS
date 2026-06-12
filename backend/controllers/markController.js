@@ -5,7 +5,7 @@ const Report = require('../models/Report');
 const Student = require('../models/Student');
 const Class = require('../models/Class');
 const Subject = require('../models/Subject');
-const { calculateGrade, calculateSubjectAverage, calculateReportRemarks } = require('../utils/gradeUtils');
+const { calculateGrade, calculateSubjectAverage, calculateGradePoints } = require('../utils/gradeUtils');
 
 const getMarks = asyncHandler(async (req, res) => {
   const page = parseInt(req.query.page) || 1;
@@ -61,10 +61,10 @@ const getMarks = asyncHandler(async (req, res) => {
 
 const addMarks = asyncHandler(async (req, res) => {
   const { studentId, subjectId, classId, sectionId, termId, academicYearId, midtermMarks, endTermMarks } = req.body;
-  if (!studentId || !subjectId || !classId || !termId) {
+  if (!studentId || !subjectId || !classId || !termId || !academicYearId) {
     return res.status(400).json({
       success: false,
-      message: 'Please provide required fields: studentId, subjectId, classId, termId',
+      message: 'Please provide required fields: studentId, subjectId, classId, termId, academicYearId',
     });
   }
   if ((midtermMarks != null && (midtermMarks < 0 || midtermMarks > 100)) ||
@@ -208,8 +208,6 @@ const updateMarks = asyncHandler(async (req, res) => {
     }
     mark.endTermMarks = req.body.endTermMarks;
   }
-  mark.subjectAverage = calculateSubjectAverage(mark.midtermMarks, mark.endTermMarks);
-  mark.grade = calculateGrade(mark.subjectAverage);
   const updated = await mark.save();
   await generateReportForStudent(mark.studentId, mark.termId, mark.academicYearId);
   return res.json({
@@ -237,14 +235,18 @@ const deleteMarks = asyncHandler(async (req, res) => {
 
 const getStudentMarks = asyncHandler(async (req, res) => {
   const { studentId } = req.params;
-  if (req.user.role === 'student') {
-    const student = await Student.findById(studentId).select('userId').lean();
-    if (!student || req.user._id.toString() !== (student.userId || '').toString()) {
-      return res.status(403).json({
-        success: false,
-        message: 'You do not have permission to view these marks',
-      });
-    }
+  const studentExists = await Student.findById(studentId).select('userId classId').lean();
+  if (!studentExists) {
+    return res.status(404).json({
+      success: false,
+      message: 'Student not found',
+    });
+  }
+  if (req.user.role === 'student' && req.user._id.toString() !== (studentExists.userId || '').toString()) {
+    return res.status(403).json({
+      success: false,
+      message: 'You do not have permission to view these marks',
+    });
   }
   if (req.user.role === 'teacher') {
     const teacher = await Teacher.findOne({ userId: req.user._id }).populate({ path: 'subjectIds', select: 'classIds' });
@@ -253,8 +255,7 @@ const getStudentMarks = asyncHandler(async (req, res) => {
       for (const subject of teacher.subjectIds) {
         for (const cid of subject.classIds) classIdSet.add(cid.toString());
       }
-      const student = await Student.findById(studentId).select('classId').lean();
-      if (!student || !classIdSet.has(student.classId?.toString())) {
+      if (!classIdSet.has(studentExists.classId?.toString())) {
         return res.status(403).json({
           success: false,
           message: 'You do not have permission to view these marks',
@@ -335,13 +336,29 @@ async function generateReportForStudent(studentId, termId, academicYearId) {
     await Report.deleteOne({ studentId, termId, academicYearId });
     return;
   }
+  const classDoc = await Class.findById(student.classId).select('level').lean();
+  const level = classDoc ? classDoc.level : 'O-Level';
   const midtermTotal = marks.reduce((sum, m) => sum + (m.midtermMarks || 0), 0);
   const endTermTotal = marks.reduce((sum, m) => sum + (m.endTermMarks || 0), 0);
   const subjectAverages = marks.map((m) => m.subjectAverage || 0);
   const combinedTotal = subjectAverages.reduce((sum, s) => sum + s, 0);
   const overallAverage = combinedTotal / marks.length;
-  const grade = calculateGrade(overallAverage);
-  const remarks = calculateReportRemarks(overallAverage);
+  const grade = calculateGrade(overallAverage, level);
+  const remarks = ['A', 'B', 'C', 'D'].includes(grade) ? 'Pass' : 'Fail';
+
+  const classRank = await Report.countDocuments({
+    classId: student.classId, termId, academicYearId,
+    overallAverage: { $gt: overallAverage },
+  }) + 1;
+
+  const totalStudentsInClass = await Student.countDocuments({ classId: student.classId, academicYearId });
+
+  const schoolRank = await Report.countDocuments({
+    termId, academicYearId,
+    overallAverage: { $gt: overallAverage },
+  }) + 1;
+
+  const totalStudentsInSchool = await Report.countDocuments({ termId, academicYearId });
 
   await Report.findOneAndUpdate(
     { studentId, termId, academicYearId },
@@ -359,23 +376,11 @@ async function generateReportForStudent(studentId, termId, academicYearId) {
       overallAverage,
       grade,
       remarks,
+      classRank,
+      totalStudentsInClass,
+      schoolRank,
+      totalStudentsInSchool,
     },
-    { upsert: true }
-  );
-
-  const classRank = await Report.countDocuments({
-    classId: student.classId, termId, academicYearId,
-    overallAverage: { $gt: overallAverage },
-  }) + 1;
-
-  const schoolRank = await Report.countDocuments({
-    termId, academicYearId,
-    overallAverage: { $gt: overallAverage },
-  }) + 1;
-
-  await Report.findOneAndUpdate(
-    { studentId, termId, academicYearId },
-    { classRank, schoolRank },
     { upsert: true }
   );
 }

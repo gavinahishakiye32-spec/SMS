@@ -11,7 +11,7 @@ router.route('/')
 router.get('/:id/subjects', protect, authorizeRoles('superadmin', 'schooladmin', 'teacher'), getTeacherSubjects);
 
 router.route('/:id')
-  .get(protect, authorizeRoles('superadmin', 'schooladmin'), getTeacherById)
+  .get(protect, authorizeRoles('superadmin', 'schooladmin', 'teacher'), getTeacherById)
   .put(protect, authorizeRoles('superadmin', 'schooladmin'), upload.single('profilePhoto'), updateTeacher)
   .delete(protect, authorizeRoles('superadmin', 'schooladmin'), deleteTeacher);
 

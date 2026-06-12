@@ -34,7 +34,9 @@ const reportSchema = mongoose.Schema(
     teacherRemark: { type: String, default: '' },
     headTeacherSignature: { type: String, default: '' },
     classRank: { type: Number, default: 0 },
+    totalStudentsInClass: { type: Number, default: 0 },
     schoolRank: { type: Number, default: 0 },
+    totalStudentsInSchool: { type: Number, default: 0 },
   },
   { timestamps: true }
 );

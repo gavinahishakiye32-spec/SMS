@@ -53,9 +53,9 @@ export default function TermsPage() {
         </div>
       ) : (
         <>
-          <div className="bg-white dark:bg-gray-900 rounded-xl shadow p-5">
+          <div className="bg-white dark:bg-gray-900 rounded-xl shadow p-4 sm:p-5">
         <h2 className="text-lg font-bold mb-4 text-gray-900 dark:text-white">Add Term</h2>
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3">
           <select value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })}
             className="px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
             <option>Term 1</option><option>Term 2</option><option>Term 3</option>
@@ -75,12 +75,12 @@ export default function TermsPage() {
             <input type="date" value={form.endDate} onChange={(e) => setForm({ ...form, endDate: e.target.value })}
               className="px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
           </label>
-          <button onClick={createMutation.mutate} className="px-4 py-2 bg-blue-600 text-white rounded-lg">Add Term</button>
+          <button onClick={createMutation.mutate} className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-lg self-end">Add Term</button>
         </div>
       </div>
       {editing && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => { setEditing(null); setEditForm({ name: 'Term 1', academicYearId: '', startDate: '', endDate: '' }); }}>
-          <div className="bg-white dark:bg-gray-900 rounded-xl p-6 w-full max-w-lg" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-2 sm:p-4" onClick={() => { setEditing(null); setEditForm({ name: 'Term 1', academicYearId: '', startDate: '', endDate: '' }); }}>
+          <div className="bg-white dark:bg-gray-900 rounded-xl p-4 sm:p-6 w-full max-w-lg mx-2 sm:mx-0" onClick={(e) => e.stopPropagation()}>
             <h2 className="text-lg font-bold mb-4 text-gray-900 dark:text-white">Edit Term</h2>
             <div className="space-y-3">
               <select value={editForm.name} onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}

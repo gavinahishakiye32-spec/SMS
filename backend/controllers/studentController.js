@@ -65,11 +65,14 @@ const getStudents = asyncHandler(async (req, res) => {
     }
   }
   const total = await Student.countDocuments(query);
-  const students = await Student.find(query)
+  let studentQuery = Student.find(query);
+  if (req.user.role === 'teacher') {
+    studentQuery = studentQuery.select('-studentCode -gender -dateOfBirth -NIN -address -phoneNumber -userId');
+  }
+  const students = await studentQuery
     .populate('classId', 'name level')
     .populate('sectionId', 'name')
     .populate('academicYearId', 'year')
-    .populate('parentId', 'fullName phoneNumber')
     .populate('userId', 'email')
     .skip(skip)
     .limit(limit)
@@ -83,7 +86,7 @@ const getStudents = asyncHandler(async (req, res) => {
 });
 
 const createStudent = asyncHandler(async (req, res) => {
-  const { firstName, lastName, gender, dateOfBirth, NIN, address, phoneNumber, email, parentId, classId, sectionId, sectionName, academicYearId } = req.body;
+  const { firstName, lastName, gender, dateOfBirth, NIN, address, phoneNumber, email, classId, sectionId, sectionName, academicYearId } = req.body;
   if (!firstName || !lastName || !gender || !classId) {
     return res.status(400).json({
       success: false,
@@ -117,7 +120,6 @@ const createStudent = asyncHandler(async (req, res) => {
     academicYear = activeYear._id;
   }
   let resolvedSectionId = sectionId || undefined;
-  const resolvedParentId = parentId || undefined;
   if (!resolvedSectionId && sectionName) {
     let section = await Section.findOne({ name: sectionName, classId });
     if (!section) {
@@ -140,15 +142,17 @@ const createStudent = asyncHandler(async (req, res) => {
     const existingUser = await User.findOne({ email: loginEmail });
     if (existingUser) {
       const orphanStudent = await Student.findOne({ userId: existingUser._id });
-      if (!orphanStudent) {
-        await User.deleteOne({ _id: existingUser._id });
-      } else {
+      if (orphanStudent) {
         await Student.create({
           studentCode, firstName: '--RESERVED--', lastName: '--RESERVED--',
           gender: 'Male', classId, academicYearId: academicYear,
         }).catch(() => {});
         continue;
       }
+      return res.status(409).json({
+        success: false,
+        message: `Email ${loginEmail} is already in use by another user`,
+      });
     }
     try {
       user = await User.create({
@@ -178,7 +182,6 @@ const createStudent = asyncHandler(async (req, res) => {
         NIN,
         address,
         phoneNumber,
-        parentId: resolvedParentId,
         classId,
         sectionId: resolvedSectionId,
         academicYearId: academicYear,
@@ -209,11 +212,15 @@ const createStudent = asyncHandler(async (req, res) => {
 });
 
 const getStudentById = asyncHandler(async (req, res) => {
-  const student = await Student.findById(req.params.id)
+  let query = Student.findById(req.params.id);
+  if (req.user.role === 'teacher') {
+    query = query.select('-studentCode -gender -dateOfBirth -NIN -address -phoneNumber -userId');
+  }
+  const student = await query
     .populate('classId', 'name level')
     .populate('sectionId', 'name')
     .populate('academicYearId', 'year')
-    .populate('parentId', 'fullName phoneNumber email address')
+    .populate('userId', 'email')
     .lean();
   if (!student) {
     return res.status(404).json({
@@ -262,7 +269,7 @@ const updateStudent = asyncHandler(async (req, res) => {
     }
     student.sectionId = section._id;
   }
-  const fields = ['firstName', 'lastName', 'gender', 'dateOfBirth', 'NIN', 'address', 'phoneNumber', 'parentId', 'classId', 'sectionId', 'academicYearId'];
+  const fields = ['firstName', 'lastName', 'gender', 'dateOfBirth', 'NIN', 'address', 'phoneNumber', 'classId', 'sectionId', 'academicYearId'];
   fields.forEach((f) => {
     if (req.body[f] !== undefined) student[f] = req.body[f];
   });
@@ -312,7 +319,11 @@ const deleteStudent = asyncHandler(async (req, res) => {
 });
 
 const getStudentReport = asyncHandler(async (req, res) => {
-  const student = await Student.findById(req.params.id)
+  let query = Student.findById(req.params.id);
+  if (req.user.role === 'teacher') {
+    query = query.select('-studentCode -gender -dateOfBirth -NIN -address -phoneNumber -userId');
+  }
+  const student = await query
     .populate('classId', 'name level')
     .populate('sectionId', 'name')
     .populate('academicYearId', 'year');

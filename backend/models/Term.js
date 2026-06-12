@@ -16,5 +16,6 @@ const termSchema = mongoose.Schema(
 );
 
 termSchema.index({ isActive: 1 });
+termSchema.index({ name: 1, academicYearId: 1 }, { unique: true });
 
 module.exports = mongoose.model('Term', termSchema);

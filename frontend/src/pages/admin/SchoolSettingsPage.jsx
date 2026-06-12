@@ -42,7 +42,7 @@ export default function SchoolSettingsPage() {
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold text-gray-900 dark:text-white">School Settings</h1>
-      <div className="bg-white dark:bg-gray-900 rounded-xl shadow p-6 max-w-xl">
+      <div className="bg-white dark:bg-gray-900 rounded-xl shadow p-4 sm:p-6 max-w-xl">
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">School Name</label>

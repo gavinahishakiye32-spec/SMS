@@ -89,7 +89,6 @@ const deleteParent = asyncHandler(async (req, res) => {
       message: 'Parent not found',
     });
   }
-  await Student.updateMany({ parentId: parent._id }, { parentId: null });
   await Parent.deleteOne({ _id: parent._id });
   return res.json({
     success: true,

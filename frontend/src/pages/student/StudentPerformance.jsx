@@ -1,7 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import API from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
 
 export default function StudentPerformance() {
   const { user } = useAuth();
@@ -24,19 +23,6 @@ export default function StudentPerformance() {
     enabled: !!profile?._id,
   });
 
-  const chartData = marks?.map((m) => ({
-    subject: m.subjectId?.name || 'N/A',
-    Midterm: m.midtermMarks || 0,
-    'End-Term': m.endTermMarks || 0,
-    Average: m.subjectAverage || 0,
-  })) || [];
-
-  const lineData = marks?.map((m) => ({
-    subject: m.subjectId?.name || 'N/A',
-    average: m.subjectAverage || 0,
-    grade: m.grade || '-',
-  })) || [];
-
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold text-gray-900 dark:text-white">My Performance</h1>
@@ -54,36 +40,41 @@ export default function StudentPerformance() {
           <p className="text-2xl font-bold text-gray-900 dark:text-white">{profile?.studentCode}</p>
         </div>
       </div>
-      {chartData.length > 0 && (
-        <>
-          <div className="bg-white dark:bg-gray-900 rounded-xl shadow p-5">
-            <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Subject Comparison</h2>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="subject" />
-                <YAxis domain={[0, 100]} />
-                <Tooltip />
-                <Bar dataKey="Midterm" fill="#2563EB" />
-                <Bar dataKey="End-Term" fill="#14B8A6" />
-                <Bar dataKey="Average" fill="#D97706" />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-          <div className="bg-white dark:bg-gray-900 rounded-xl shadow p-5">
-            <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Subject Averages</h2>
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={lineData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="subject" />
-                <YAxis domain={[0, 100]} />
-                <Tooltip />
-                <Line type="monotone" dataKey="average" stroke="#2563EB" strokeWidth={2} />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </>
-      )}
+      <div className="bg-white dark:bg-gray-900 rounded-xl shadow overflow-hidden">
+        <h2 className="text-lg font-semibold p-5 pb-0 text-gray-900 dark:text-white">Subject Performance</h2>
+        <div className="overflow-x-auto p-5">
+          {marks && marks.length > 0 ? (
+            <table className="w-full text-sm border">
+              <thead>
+                <tr className="bg-gray-50 dark:bg-gray-800">
+                  <th className="border p-2 text-left text-gray-700 dark:text-gray-300">Subject</th>
+                  <th className="border p-2 text-gray-700 dark:text-gray-300">Mid-Term/100</th>
+                  <th className="border p-2 text-gray-700 dark:text-gray-300">End-Term/100</th>
+                  <th className="border p-2 text-gray-700 dark:text-gray-300">Average</th>
+                  <th className="border p-2 text-gray-700 dark:text-gray-300">Grade</th>
+                </tr>
+              </thead>
+              <tbody>
+                {marks.map((m) => (
+                  <tr key={m._id}>
+                    <td className="border p-2 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700">{m.subjectId?.name}</td>
+                    <td className={`border p-2 text-center border-gray-200 dark:border-gray-700 ${m.midtermMarks != null ? (m.midtermMarks >= 40 ? 'text-green-600 dark:text-green-400 font-medium' : 'text-red-600 dark:text-red-400 font-medium') : 'text-gray-700 dark:text-gray-300'}`}>{m.midtermMarks ?? '-'}</td>
+                    <td className={`border p-2 text-center border-gray-200 dark:border-gray-700 ${m.endTermMarks != null ? (m.endTermMarks >= 40 ? 'text-green-600 dark:text-green-400 font-medium' : 'text-red-600 dark:text-red-400 font-medium') : 'text-gray-700 dark:text-gray-300'}`}>{m.endTermMarks ?? '-'}</td>
+                    <td className={`border p-2 text-center border-gray-200 dark:border-gray-700 ${m.subjectAverage >= 40 ? 'text-green-600 dark:text-green-400 font-medium' : 'text-red-600 dark:text-red-400 font-medium'}`}>{m.subjectAverage?.toFixed(0) || '-'}</td>
+                    <td className="border p-2 text-center font-bold border-gray-200 dark:border-gray-700">
+                      <span className={`inline-block px-2 py-0.5 rounded text-xs font-bold ${m.grade === 'A' ? 'bg-green-100 text-green-700' : m.grade === 'B' ? 'bg-blue-100 text-blue-700' : m.grade === 'C' ? 'bg-yellow-100 text-yellow-700' : m.grade === 'D' ? 'bg-orange-100 text-orange-700' : m.grade === 'E' ? 'bg-red-100 text-red-700' : m.grade === 'F' ? 'bg-red-200 text-red-800' : 'bg-gray-100 text-gray-500'}`}>
+                        {m.grade || '-'}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <p className="text-center text-gray-500 dark:text-gray-400 py-8">No marks available yet.</p>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

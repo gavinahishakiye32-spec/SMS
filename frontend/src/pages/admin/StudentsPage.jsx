@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import API from '../../services/api';
 import { useToast } from '../../context/ToastContext';
@@ -10,6 +10,10 @@ export default function StudentsPage() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [level, setLevel] = useState('');
+  const [classFilter, setClassFilter] = useState('');
+  const [sectionFilter, setSectionFilter] = useState('');
+  const [genderFilter, setGenderFilter] = useState('');
+  const [academicYearFilter, setAcademicYearFilter] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState({
@@ -19,12 +23,12 @@ export default function StudentsPage() {
   const queryClient = useQueryClient();
 
   const { data, isLoading } = useQuery({
-    queryKey: ['students', page, search, level],
-    queryFn: () => API.get(`/students?page=${page}&limit=10&search=${search}&level=${level}`).then((r) => r.data),
+    queryKey: ['students', page, search, level, classFilter, sectionFilter, genderFilter, academicYearFilter],
+    queryFn: () => API.get(`/students?page=${page}&limit=10&search=${search}&level=${level}${classFilter ? `&classId=${classFilter}` : ''}${sectionFilter ? `&sectionId=${sectionFilter}` : ''}${genderFilter ? `&gender=${genderFilter}` : ''}${academicYearFilter ? `&academicYearId=${academicYearFilter}` : ''}`).then((r) => r.data),
   });
 
   const { data: classes } = useQuery({
-    queryKey: ['classes'],
+    queryKey: ['classes-list'],
     queryFn: () => API.get('/classes?limit=50').then((r) => r.data.data),
   });
 
@@ -32,6 +36,17 @@ export default function StudentsPage() {
     queryKey: ['sections'],
     queryFn: () => API.get('/sections').then((r) => r.data.data),
   });
+
+  const { data: academicYears } = useQuery({
+    queryKey: ['academic-years'],
+    queryFn: () => API.get('/academic-years').then((r) => r.data.data),
+  });
+
+  const filteredSections = useMemo(() => {
+    if (!sections) return [];
+    if (!classFilter) return sections;
+    return sections.filter((s) => (s.classId?._id || s.classId) === classFilter);
+  }, [sections, classFilter]);
 
   const resetPasswordMutation = useMutation({
     mutationFn: ({ userId }) => API.post('/auth/reset-password', { userId, newPassword: 'student123' }),
@@ -82,31 +97,52 @@ export default function StudentsPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Students</h1>
         {user?.role !== 'teacher' && (
-          <button onClick={() => { setShowForm(true); setEditing(null); }} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 whitespace-nowrap">+ Add Student</button>
+          <button onClick={() => { setShowForm(true); setEditing(null); }} className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 whitespace-nowrap text-center">+ Add Student</button>
         )}
       </div>
-      <div className="flex flex-wrap gap-3">
+      <div className="flex flex-col sm:flex-row flex-wrap gap-3">
         <input
           type="text" placeholder="Search by name or code..." value={search}
           onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-          className="w-full md:w-96 px-4 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+          className="w-full sm:w-72 px-4 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
         />
-        <select value={level} onChange={(e) => { setLevel(e.target.value); setPage(1); }}
-          className="px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+        <select value={level} onChange={(e) => { setLevel(e.target.value); setClassFilter(''); setSectionFilter(''); setPage(1); }}
+          className="w-full sm:w-auto px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
           <option value="">All Levels</option>
           <option value="O-Level">O-Level</option>
           <option value="A-Level">A-Level</option>
         </select>
+        <select value={classFilter} onChange={(e) => { setClassFilter(e.target.value); setSectionFilter(''); setPage(1); }}
+          className="w-full sm:w-auto px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+          <option value="">All Classes</option>
+          {classes ? classes.filter((c) => !level || c.level === level).map((c) => <option key={c._id} value={c._id}>{c.name}</option>) : <option disabled>Loading...</option>}
+        </select>
+        <select value={sectionFilter} onChange={(e) => { setSectionFilter(e.target.value); setPage(1); }}
+          className="w-full sm:w-auto px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+          <option value="">All Sections</option>
+          {filteredSections.map((s) => <option key={s._id} value={s._id}>{s.name}</option>)}
+        </select>
+        <select value={genderFilter} onChange={(e) => { setGenderFilter(e.target.value); setPage(1); }}
+          className="w-full sm:w-auto px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+          <option value="">All Genders</option>
+          <option value="Male">Male</option>
+          <option value="Female">Female</option>
+        </select>
+        <select value={academicYearFilter} onChange={(e) => { setAcademicYearFilter(e.target.value); setPage(1); }}
+          className="w-full sm:w-auto px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+          <option value="">All Years</option>
+          {academicYears ? academicYears.map((y) => <option key={y._id} value={y._id}>{y.year}</option>) : <option disabled>Loading...</option>}
+        </select>
       </div>
       {showForm && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setShowForm(false)}>
-          <div className="bg-white dark:bg-gray-900 rounded-xl p-6 w-full max-w-lg max-h-[80vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-2 sm:p-4" onClick={() => setShowForm(false)}>
+          <div className="bg-white dark:bg-gray-900 rounded-xl p-4 sm:p-6 w-full max-w-lg max-h-[90vh] sm:max-h-[80vh] overflow-y-auto mx-2 sm:mx-0" onClick={(e) => e.stopPropagation()}>
             <h2 className="text-lg font-bold mb-4 text-gray-900 dark:text-white">{editing ? 'Edit Student' : 'Add Student'}</h2>
             <form onSubmit={handleSubmit} className="space-y-3">
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <input placeholder="First Name" value={form.firstName} onChange={(e) => setForm({ ...form, firstName: e.target.value })}
                   className="px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white" required />
                 <input placeholder="Last Name" value={form.lastName} onChange={(e) => setForm({ ...form, lastName: e.target.value })}
@@ -137,7 +173,7 @@ export default function StudentsPage() {
               <select value={form.sectionId} onChange={(e) => setForm({ ...form, sectionId: e.target.value })}
                 className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
                 <option value="">Select Section</option>
-                {sections ? sections.filter((s) => !form.classId || s.classId === form.classId || s.classId?._id === form.classId).map((s) => (
+                {sections ? sections.filter((s) => !form.classId || (s.classId?._id || s.classId) === form.classId).map((s) => (
                   <option key={s._id} value={s._id}>{s.name}</option>
                 )) : <option disabled>Loading...</option>}
               </select>
@@ -156,34 +192,34 @@ export default function StudentsPage() {
           <table className="w-full text-sm">
             <thead className="bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300">
               <tr>
-                <th className="text-left p-3">Code</th>
+                {user?.role !== 'teacher' && <th className="text-left p-3">Code</th>}
                 <th className="text-left p-3">Name</th>
-                <th className="text-left p-3">Gender</th>
-                <th className="text-left p-3">Login Email</th>
-                <th className="text-left p-3">Date of Birth</th>
-                <th className="text-left p-3">NIN</th>
+                {user?.role !== 'teacher' && <th className="text-left p-3">Gender</th>}
+                {user?.role !== 'teacher' && <th className="text-left p-3">Login Email</th>}
+                {user?.role !== 'teacher' && <th className="text-left p-3">Date of Birth</th>}
+                {user?.role !== 'teacher' && <th className="text-left p-3">NIN</th>}
                 <th className="text-left p-3">Class</th>
                 <th className="text-left p-3">Section</th>
-                <th className="text-left p-3">Phone</th>
+                {user?.role !== 'teacher' && <th className="text-left p-3">Phone</th>}
                 {user?.role !== 'teacher' && <th className="text-left p-3">Actions</th>}
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
               {isLoading ? (
-                <tr><td colSpan={user?.role !== 'teacher' ? 10 : 9} className="p-4 text-center text-gray-500 dark:text-gray-400">Loading...</td></tr>
+                <tr><td colSpan={user?.role !== 'teacher' ? 10 : 3} className="p-4 text-center text-gray-500 dark:text-gray-400">Loading...</td></tr>
               ) : data?.data?.length === 0 ? (
-                <tr><td colSpan={user?.role !== 'teacher' ? 10 : 9} className="p-4 text-center text-gray-500 dark:text-gray-400">No students found</td></tr>
+                <tr><td colSpan={user?.role !== 'teacher' ? 10 : 3} className="p-4 text-center text-gray-500 dark:text-gray-400">No students found</td></tr>
               ) : data?.data?.map((s) => (
                 <tr key={s._id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
-                  <td className="p-3 font-medium text-gray-900 dark:text-white">{s.studentCode}</td>
+                  {user?.role !== 'teacher' && <td className="p-3 font-medium text-gray-900 dark:text-white">{s.studentCode}</td>}
                   <td className="p-3 text-gray-700 dark:text-gray-300">{s.firstName} {s.lastName}</td>
-                  <td className="p-3 text-gray-700 dark:text-gray-300">{s.gender}</td>
-                  <td className="p-3 text-gray-700 dark:text-gray-300">{s.userId?.email || (s.studentCode ? `${s.studentCode.toLowerCase()}@sms.edu` : '-')}</td>
-                  <td className="p-3 text-gray-700 dark:text-gray-300">{s.dateOfBirth ? new Date(s.dateOfBirth).toLocaleDateString() : '-'}</td>
-                  <td className="p-3 text-gray-700 dark:text-gray-300">{s.NIN || '-'}</td>
+                  {user?.role !== 'teacher' && <td className="p-3 text-gray-700 dark:text-gray-300">{s.gender}</td>}
+                  {user?.role !== 'teacher' && <td className="p-3 text-gray-700 dark:text-gray-300">{s.userId?.email || (s.studentCode ? `${s.studentCode.toLowerCase()}@sms.edu` : '-')}</td>}
+                  {user?.role !== 'teacher' && <td className="p-3 text-gray-700 dark:text-gray-300">{s.dateOfBirth ? new Date(s.dateOfBirth).toLocaleDateString() : '-'}</td>}
+                  {user?.role !== 'teacher' && <td className="p-3 text-gray-700 dark:text-gray-300">{s.NIN || '-'}</td>}
                   <td className="p-3 text-gray-700 dark:text-gray-300">{s.classId?.name || '-'}</td>
                   <td className="p-3 text-gray-700 dark:text-gray-300">{s.sectionId?.name || '-'}</td>
-                  <td className="p-3 text-gray-700 dark:text-gray-300">{s.phoneNumber || '-'}</td>
+                  {user?.role !== 'teacher' && <td className="p-3 text-gray-700 dark:text-gray-300">{s.phoneNumber || '-'}</td>}
                   {user?.role !== 'teacher' && (
                     <td className="p-3 flex gap-2">
                       <button onClick={() => handleEdit(s)} className="text-blue-600 hover:underline text-xs">Edit</button>

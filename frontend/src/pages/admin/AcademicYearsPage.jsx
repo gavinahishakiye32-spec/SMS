@@ -40,14 +40,14 @@ export default function AcademicYearsPage() {
   return (
     <div className="space-y-4">
       <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Academic Years</h1>
-      <div className="flex flex-wrap gap-3">
+      <div className="flex flex-col sm:flex-row flex-wrap gap-3">
         <input placeholder="Year (e.g., 2026)" value={year} onChange={(e) => setYear(e.target.value)}
-          className="px-4 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-40" />
-        <button onClick={createMutation.mutate} className="px-4 py-2 bg-blue-600 text-white rounded-lg">Add Year</button>
+          className="w-full sm:w-40 px-4 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
+        <button onClick={createMutation.mutate} className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-lg">Add Year</button>
       </div>
       {editing && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => { setEditing(null); setEditYear(''); }}>
-          <div className="bg-white dark:bg-gray-900 rounded-xl p-6 w-full max-w-md" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-2 sm:p-4" onClick={() => { setEditing(null); setEditYear(''); }}>
+          <div className="bg-white dark:bg-gray-900 rounded-xl p-4 sm:p-6 w-full max-w-md mx-2 sm:mx-0" onClick={(e) => e.stopPropagation()}>
             <h2 className="text-lg font-bold mb-4 text-gray-900 dark:text-white">Edit Academic Year</h2>
             <div className="space-y-3">
               <input placeholder="Year (e.g., 2026)" value={editYear} onChange={(e) => setEditYear(e.target.value)}

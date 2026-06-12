@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const schoolSettingSchema = new mongoose.Schema({
+const schoolSettingSchema = mongoose.Schema({
   schoolName: { type: String, default: 'School Management System' },
   logo: { type: String, default: '' },
 }, { timestamps: true });

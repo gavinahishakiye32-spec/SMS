@@ -7,11 +7,12 @@ export default function MarksPage() {
   const [classFilter, setClassFilter] = useState('');
   const [subjectFilter, setSubjectFilter] = useState('');
   const [termFilter, setTermFilter] = useState('');
+  const [academicYearFilter, setAcademicYearFilter] = useState('');
 
   const { data, isLoading, isError, error } = useQuery({
-    queryKey: ['marks', page, classFilter, subjectFilter, termFilter],
+    queryKey: ['marks', page, classFilter, subjectFilter, termFilter, academicYearFilter],
     queryFn: async () => {
-      const response = await API.get(`/marks?page=${page}&limit=10${classFilter ? `&classId=${classFilter}` : ''}${subjectFilter ? `&subjectId=${subjectFilter}` : ''}${termFilter ? `&termId=${termFilter}` : ''}`);
+      const response = await API.get(`/marks?page=${page}&limit=10${classFilter ? `&classId=${classFilter}` : ''}${subjectFilter ? `&subjectId=${subjectFilter}` : ''}${termFilter ? `&termId=${termFilter}` : ''}${academicYearFilter ? `&academicYearId=${academicYearFilter}` : ''}`);
       return response.data;
     },
   });
@@ -36,6 +37,14 @@ export default function MarksPage() {
     queryKey: ['terms'], 
     queryFn: async () => {
       const response = await API.get('/terms?limit=50');
+      return response.data.data;
+    },
+  });
+
+  const { data: academicYears } = useQuery({
+    queryKey: ['academic-years'],
+    queryFn: async () => {
+      const response = await API.get('/academic-years');
       return response.data.data;
     },
   });
@@ -77,18 +86,22 @@ export default function MarksPage() {
   return (
     <div className="space-y-4">
       <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Marks</h1>
-      <div className="flex flex-wrap gap-3">
-        <select value={classFilter} onChange={(e) => { setClassFilter(e.target.value); if (!e.target.value) setSubjectFilter(''); }} className="px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+      <div className="flex flex-col sm:flex-row flex-wrap gap-3">
+        <select value={classFilter} onChange={(e) => { setClassFilter(e.target.value); if (!e.target.value) setSubjectFilter(''); }} className="w-full sm:w-auto px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
           <option value="">All Classes</option>
           {classes?.map((c) => <option key={c._id} value={c._id}>{c.name}</option>)}
         </select>
-        <select value={subjectFilter} onChange={(e) => { setSubjectFilter(e.target.value); if (!e.target.value) setClassFilter(''); }} className="px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+        <select value={subjectFilter} onChange={(e) => { setSubjectFilter(e.target.value); if (!e.target.value) setClassFilter(''); }} className="w-full sm:w-auto px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
           <option value="">All Subjects</option>
           {filteredSubjects?.map((s) => <option key={s._id} value={s._id}>{s.name} ({s.level})</option>)}
         </select>
-        <select value={termFilter} onChange={(e) => setTermFilter(e.target.value)} className="px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+        <select value={termFilter} onChange={(e) => setTermFilter(e.target.value)} className="w-full sm:w-auto px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
           <option value="">All Terms</option>
           {terms?.map((t) => <option key={t._id} value={t._id}>{t.name}</option>)}
+        </select>
+        <select value={academicYearFilter} onChange={(e) => setAcademicYearFilter(e.target.value)} className="w-full sm:w-auto px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+          <option value="">All Years</option>
+          {academicYears?.map((y) => <option key={y._id} value={y._id}>{y.year}</option>)}
         </select>
       </div>
       <div className="bg-white dark:bg-gray-900 rounded-xl shadow overflow-hidden">

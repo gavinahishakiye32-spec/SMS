@@ -44,13 +44,13 @@ export default function SectionsPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Sections</h1>
-        <button onClick={() => { setShowForm(true); setEditing(null); }} className="px-4 py-2 bg-blue-600 text-white rounded-lg">+ Add Section</button>
+        <button onClick={() => { setShowForm(true); setEditing(null); }} className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-lg text-center">+ Add Section</button>
       </div>
       {showForm && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => { setShowForm(false); setEditing(null); }}>
-          <div className="bg-white dark:bg-gray-900 rounded-xl p-6 w-full max-w-md" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-2 sm:p-4" onClick={() => { setShowForm(false); setEditing(null); }}>
+          <div className="bg-white dark:bg-gray-900 rounded-xl p-4 sm:p-6 w-full max-w-md mx-2 sm:mx-0" onClick={(e) => e.stopPropagation()}>
             <h2 className="text-lg font-bold mb-4 text-gray-900 dark:text-white">{editing ? 'Edit Section' : 'Add Section'}</h2>
             <form onSubmit={handleSubmit} className="space-y-3">
               <input placeholder="Section Name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })}

@@ -11,7 +11,6 @@ const studentSchema = mongoose.Schema(
     NIN: { type: String },
     address: { type: String },
     phoneNumber: { type: String },
-    parentId: { type: mongoose.Schema.Types.ObjectId, ref: 'Parent' },
     classId: { type: mongoose.Schema.Types.ObjectId, ref: 'Class' },
     sectionId: { type: mongoose.Schema.Types.ObjectId, ref: 'Section' },
     academicYearId: { type: mongoose.Schema.Types.ObjectId, ref: 'AcademicYear' },
@@ -25,7 +24,6 @@ studentSchema.index({ classId: 1 });
 studentSchema.index({ sectionId: 1 });
 studentSchema.index({ academicYearId: 1 });
 studentSchema.index({ userId: 1 });
-studentSchema.index({ parentId: 1 });
 studentSchema.index({ firstName: 'text', lastName: 'text', studentCode: 'text' });
 
 module.exports = mongoose.model('Student', studentSchema);

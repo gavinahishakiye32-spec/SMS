@@ -74,21 +74,21 @@ export default function SubjectsPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Subjects</h1>
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-wrap gap-3 w-full sm:w-auto">
           <select value={filterLevel} onChange={(e) => setFilterLevel(e.target.value)}
-            className="px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+            className="flex-1 sm:flex-none px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
             <option value="">All Levels</option>
             <option value="O-Level">O-Level</option>
             <option value="A-Level">A-Level</option>
           </select>
-          <button onClick={() => { setShowForm(true); setEditing(null); }} className="px-4 py-2 bg-blue-600 text-white rounded-lg">+ Add Subject</button>
+          <button onClick={() => { setShowForm(true); setEditing(null); }} className="flex-1 sm:flex-none px-4 py-2 bg-blue-600 text-white rounded-lg text-center">+ Add Subject</button>
         </div>
       </div>
       {showForm && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => { setShowForm(false); setEditing(null); }}>
-          <div className="bg-white dark:bg-gray-900 rounded-xl p-6 w-full max-w-md" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-2 sm:p-4" onClick={() => { setShowForm(false); setEditing(null); }}>
+          <div className="bg-white dark:bg-gray-900 rounded-xl p-4 sm:p-6 w-full max-w-md mx-2 sm:mx-0" onClick={(e) => e.stopPropagation()}>
             <h2 className="text-lg font-bold mb-4 text-gray-900 dark:text-white">{editing ? 'Edit Subject' : 'Add Subject'}</h2>
             <form onSubmit={handleSubmit} className="space-y-3">
               <input placeholder="Subject Name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })}
@@ -148,13 +148,13 @@ export default function SubjectsPage() {
         </div>
       </div>
       {showAssign && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setShowAssign(null)}>
-          <div className="bg-white dark:bg-gray-900 rounded-xl p-6 w-full max-w-md" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-2 sm:p-4" onClick={() => setShowAssign(null)}>
+          <div className="bg-white dark:bg-gray-900 rounded-xl p-4 sm:p-6 w-full max-w-md mx-2 sm:mx-0" onClick={(e) => e.stopPropagation()}>
             <h2 className="text-lg font-bold mb-4 text-gray-900 dark:text-white">Assign Teacher {assigningSubject ? `(${assigningSubject.name})` : ''}</h2>
             <select value={assignTeacherId} onChange={(e) => setAssignTeacherId(e.target.value)}
               className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white mb-4">
               <option value="">Select Teacher</option>
-              {teachers ? teachers.filter((t) => !assigningSubject || !t.level || t.level === assigningSubject.level).map((t) => <option key={t._id} value={t._id}>{t.firstName} {t.lastName}</option>) : <option disabled>Loading...</option>}
+              {teachers ? teachers.map((t) => <option key={t._id} value={t._id}>{t.firstName} {t.lastName}</option>) : <option disabled>Loading...</option>}
             </select>
             <div className="flex gap-3">
               <button onClick={() => handleAssign(showAssign)} className="px-4 py-2 bg-blue-600 text-white rounded-lg">Assign</button>

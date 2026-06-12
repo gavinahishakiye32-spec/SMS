@@ -94,10 +94,10 @@ export default function AnalyticsPage() {
           ))}
         </div>
       </div>
-      <div className="bg-white dark:bg-gray-900 rounded-xl shadow p-5">
+      <div className="bg-white dark:bg-gray-900 rounded-xl shadow p-4 sm:p-5">
         <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Class Performance</h2>
         <select value={classId} onChange={(e) => setClassId(e.target.value)}
-          className="mb-4 px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-48">
+          className="mb-4 w-full sm:w-48 px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
           <option value="">Select Class</option>
           {classes ? classes.map((c) => <option key={c._id} value={c._id}>{c.name}</option>) : <option disabled>Loading...</option>}
         </select>

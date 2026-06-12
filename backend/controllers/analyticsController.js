@@ -18,7 +18,7 @@ const getSchoolAnalytics = asyncHandler(async (req, res) => {
   const avgPerformance = reports.length > 0
     ? reports.reduce((sum, r) => sum + r.overallAverage, 0) / reports.length
     : 0;
-  const gradeDistribution = { Excellent: 0, 'V.Good': 0, Good: 0, 'F.Good': 0, Tried: 0, Improve: 0, Failed: 0 };
+  const gradeDistribution = { A: 0, B: 0, C: 0, D: 0, E: 0, F: 0 };
   reports.forEach((r) => {
     if (gradeDistribution[r.grade] !== undefined) gradeDistribution[r.grade]++;
   });
@@ -95,7 +95,7 @@ const getClassAnalytics = asyncHandler(async (req, res) => {
   const classAverage = totalStudents > 0
     ? reports.reduce((sum, r) => sum + r.overallAverage, 0) / totalStudents
     : 0;
-  const gradeDistribution = { Excellent: 0, 'V.Good': 0, Good: 0, 'F.Good': 0, Tried: 0, Improve: 0, Failed: 0 };
+  const gradeDistribution = { A: 0, B: 0, C: 0, D: 0, E: 0, F: 0 };
   reports.forEach((r) => {
     if (gradeDistribution[r.grade] !== undefined) gradeDistribution[r.grade]++;
   });

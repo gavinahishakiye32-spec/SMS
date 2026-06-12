@@ -100,6 +100,12 @@ const getTeacherById = asyncHandler(async (req, res) => {
       message: 'Teacher not found',
     });
   }
+  if (req.user.role === 'teacher' && teacher.userId?.toString() !== req.user._id.toString()) {
+    return res.status(403).json({
+      success: false,
+      message: 'You do not have permission to view this teacher profile',
+    });
+  }
   return res.json({ success: true, data: teacher });
 });
 

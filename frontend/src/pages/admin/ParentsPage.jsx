@@ -70,15 +70,15 @@ export default function ParentsPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Parents</h1>
-        <button onClick={() => { setShowForm(true); setEditing(null); setForm({ fullName: '', NIN: '', phoneNumber: '', email: '', address: '', studentIds: [] }); }} className="px-4 py-2 bg-blue-600 text-white rounded-lg">+ Add Parent</button>
+        <button onClick={() => { setShowForm(true); setEditing(null); setForm({ fullName: '', NIN: '', phoneNumber: '', email: '', address: '', studentIds: [] }); }} className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-lg text-center">+ Add Parent</button>
       </div>
       <input placeholder="Search..." value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-        className="w-full md:w-96 px-4 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
+        className="w-full sm:w-96 px-4 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
       {showForm && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => { setShowForm(false); setEditing(null); }}>
-          <div className="bg-white dark:bg-gray-900 rounded-xl p-6 w-full max-w-lg max-h-[80vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-2 sm:p-4" onClick={() => { setShowForm(false); setEditing(null); }}>
+          <div className="bg-white dark:bg-gray-900 rounded-xl p-4 sm:p-6 w-full max-w-lg max-h-[90vh] sm:max-h-[80vh] overflow-y-auto mx-2 sm:mx-0" onClick={(e) => e.stopPropagation()}>
             <h2 className="text-lg font-bold mb-4 text-gray-900 dark:text-white">{editing ? 'Edit Parent' : 'Add Parent'}</h2>
             <form onSubmit={handleSubmit} className="space-y-3">
               <input placeholder="Full Name" value={form.fullName} onChange={(e) => setForm({ ...form, fullName: e.target.value })} className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white" required />
@@ -125,7 +125,11 @@ export default function ParentsPage() {
                   <td className="p-3 text-gray-700 dark:text-gray-300">{p.NIN || '-'}</td>
                   <td className="p-3 text-gray-700 dark:text-gray-300">{p.phoneNumber || '-'}</td>
                   <td className="p-3 text-gray-700 dark:text-gray-300">{p.email || '-'}</td>
-                  <td className="p-3 text-gray-700 dark:text-gray-300">{p.studentIds?.length || 0}</td>
+                  <td className="p-3 text-gray-700 dark:text-gray-300">
+                    {p.studentIds?.length
+                      ? p.studentIds.map((s) => `${s.firstName} ${s.lastName}`).join(', ')
+                      : '-'}
+                  </td>
                   <td className="p-3 flex gap-2">
                     <button onClick={() => handleEdit(p)} className="text-blue-600 hover:underline text-xs">Edit</button>
                     <button onClick={() => { if (confirm('Delete?')) deleteMutation.mutate(p._id); }} className="text-red-600 hover:underline text-xs">Delete</button>

@@ -42,9 +42,9 @@ export default function Sidebar({ open, onClose }) {
   return (
     <>
       {open && (
-        <div className="fixed inset-0 bg-black/50 z-40 lg:hidden" onClick={onClose} />
+        <div className="fixed inset-0 bg-black/50 z-40 lg:hidden transition-opacity" onClick={onClose} />
       )}
-      <aside className={`fixed top-0 left-0 z-50 h-full w-64 bg-white dark:bg-[#0F172A] border-r border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white transform transition-[transform,background-color] duration-200 lg:translate-x-0 ${open ? 'translate-x-0' : '-translate-x-full'}`}>
+      <aside className={`fixed top-0 left-0 z-50 h-full w-64 bg-white dark:bg-[#0F172A] border-r border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white transform transition-[transform,background-color] duration-200 ease-in-out lg:translate-x-0 ${open ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="p-4 border-b border-gray-200 dark:border-gray-700">
           <h1 className="text-lg font-bold">SMS</h1>
           <p className="text-xs text-gray-500 dark:text-gray-400 capitalize">{user?.role?.replace('admin', ' Admin')}</p>
@@ -61,7 +61,7 @@ export default function Sidebar({ open, onClose }) {
                 }`
               }
             >
-              <span>{link.icon}</span>
+              <span className="text-base">{link.icon}</span>
               <span>{link.label}</span>
             </NavLink>
           ))}

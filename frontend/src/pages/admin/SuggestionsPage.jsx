@@ -39,9 +39,9 @@ export default function SuggestionsPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Suggestions Board</h1>
-        <button onClick={() => setShowForm(true)} className="px-4 py-2 bg-blue-600 text-white rounded-lg">+ New Suggestion</button>
+        <button onClick={() => setShowForm(true)} className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-lg text-center">+ New Suggestion</button>
       </div>
       {showForm && (
         <div className="bg-white dark:bg-gray-900 rounded-xl shadow p-5">

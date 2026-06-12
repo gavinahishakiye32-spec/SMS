@@ -105,15 +105,15 @@ export default function TeacherMarks() {
   return (
     <div className="space-y-4">
       <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Marks Entry</h1>
-      <div className="flex flex-wrap gap-3">
+      <div className="flex flex-col sm:flex-row flex-wrap gap-3">
         <select value={level} onChange={(e) => { setLevel(e.target.value); setSubjectId(''); setClassId(''); }}
-          className="px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+          className="w-full sm:w-auto px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
           <option value="">All Levels</option>
           <option value="O-Level">O-Level</option>
           <option value="A-Level">A-Level</option>
         </select>
         <select value={subjectId} onChange={(e) => { setSubjectId(e.target.value); setClassId(''); }}
-          className="px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+          className="w-full sm:w-auto px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
           <option value="">Select Subject</option>
           {subjectsLoading ? <option disabled>Loading...</option> : filteredSubjects?.map((s) => (
             <option key={s._id} value={s._id}>
@@ -122,12 +122,12 @@ export default function TeacherMarks() {
           ))}
         </select>
         <select value={classId} onChange={(e) => setClassId(e.target.value)}
-          className="px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+          className="w-full sm:w-auto px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
           <option value="">Select Class</option>
           {classesLoading ? <option disabled>Loading...</option> : filteredClasses?.map((c) => <option key={c._id} value={c._id}>{c.name}</option>)}
         </select>
         <select value={termId} onChange={(e) => setTermId(e.target.value)}
-          className="px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+          className="w-full sm:w-auto px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
           <option value="">Select Term</option>
           {terms ? terms.map((t) => <option key={t._id} value={t._id}>{t.name}</option>) : <option disabled>Loading...</option>}
         </select>
@@ -139,34 +139,47 @@ export default function TeacherMarks() {
               <thead className="bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300">
                 <tr>
                   <th className="p-3 text-left">Student</th>
-                  <th className="p-3 text-left">Code</th>
-                  <th className="p-3 w-32">Midterm (0-100)</th>
-                  <th className="p-3 w-32">End-Term (0-100)</th>
+                  <th className="p-3 w-32">CA (20%)</th>
+                  <th className="p-3 w-32">Exam (80%)</th>
+                  <th className="p-3 w-20">Total</th>
+                  <th className="p-3 w-16">Grade</th>
                   <th className="p-3 w-24">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                 {(studentsLoading || existingLoading) ? (
-                  <tr><td colSpan="5" className="p-6 text-center text-gray-400">Loading...</td></tr>
+                  <tr><td colSpan="6" className="p-6 text-center text-gray-400">Loading...</td></tr>
                 ) : students.length === 0 ? (
-                  <tr><td colSpan="5" className="p-6 text-center text-gray-400">No students in this class.</td></tr>
+                  <tr><td colSpan="6" className="p-6 text-center text-gray-400">No students in this class.</td></tr>
                 ) : students.map((s) => {
                   const existing = existingMarks?.find((em) => em.studentId?._id === s._id);
+                  const m = marks[s._id] || {};
+                  const ca = m.midterm ?? existing?.midtermMarks;
+                  const exam = m.endterm ?? existing?.endTermMarks;
+                  const total = ca != null && exam != null ? ca * 0.2 + exam * 0.8 : null;
+                  const grade = total != null ? (
+                    total >= 80 ? 'A' : total >= 70 ? 'B' : total >= 60 ? 'C' : total >= 50 ? 'D' : total >= 40 ? 'E' : 'F'
+                  ) : '';
                   return (
                     <tr key={s._id}>
                       <td className="p-3 text-gray-900 dark:text-white">{s.firstName} {s.lastName}</td>
-                      <td className="p-3 text-gray-500 dark:text-gray-400">{s.studentCode}</td>
                       <td className="p-3">
                         <input type="number" min="0" max="100" step="0.5"
-                          defaultValue={existing?.midtermMarks ?? ''}
+                          value={m.midterm ?? existing?.midtermMarks ?? ''}
                           onChange={(e) => handleMarkChange(s._id, 'midterm', e.target.value)}
                           className="w-full px-2 py-1 border rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
                       </td>
                       <td className="p-3">
                         <input type="number" min="0" max="100" step="0.5"
-                          defaultValue={existing?.endTermMarks ?? ''}
+                          value={m.endterm ?? existing?.endTermMarks ?? ''}
                           onChange={(e) => handleMarkChange(s._id, 'endterm', e.target.value)}
                           className="w-full px-2 py-1 border rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
+                      </td>
+                      <td className="p-3 text-center font-medium text-gray-900 dark:text-white">
+                        {total != null ? total.toFixed(1) : '-'}
+                      </td>
+                      <td className="p-3 text-center font-bold text-green-600 dark:text-green-400">
+                        {grade}
                       </td>
                       <td className="p-3">
                         <button onClick={() => handleSave(s._id)}
