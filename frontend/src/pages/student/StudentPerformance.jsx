@@ -5,6 +5,11 @@ import { useAuth } from '../../context/AuthContext';
 export default function StudentPerformance() {
   const { user } = useAuth();
 
+  const { data: settings } = useQuery({
+    queryKey: ['school-settings'],
+    queryFn: () => API.get('/settings').then((r) => r.data.data),
+  });
+
   const { data: profile } = useQuery({
     queryKey: ['student-profile-perf', user?._id],
     queryFn: () => API.get(`/students?userId=${user._id}&limit=1`).then((r) => r.data.data[0]),
@@ -25,8 +30,23 @@ export default function StudentPerformance() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900 dark:text-white">My Performance</h1>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 no-print">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">My Performance</h1>
+        <button onClick={() => window.print()} className="px-4 py-2 bg-blue-600 text-white rounded-lg">Print</button>
+      </div>
+      <div id="report-card">
+        <div className="text-center mb-6">
+          <div id="school-logo" className="flex flex-col items-center mb-2">
+            {settings?.logo ? (
+              <img src={settings.logo} alt="School Logo" className="h-16 w-16 object-contain mb-1" />
+            ) : (
+              <div className="w-16 h-16 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center text-xl font-bold text-gray-400">SMS</div>
+            )}
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white">{settings?.schoolName || 'School Management System'}</h2>
+          </div>
+        </div>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">My Performance</h1>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-white dark:bg-gray-900 rounded-xl shadow p-5">
           <p className="text-sm text-gray-500 dark:text-gray-300">Class Rank</p>
           <p className="text-2xl font-bold text-blue-600">#{ranking?.rank || '-'} / {ranking?.total || '-'}</p>
@@ -75,6 +95,7 @@ export default function StudentPerformance() {
           )}
         </div>
       </div>
+    </div>
     </div>
   );
 }

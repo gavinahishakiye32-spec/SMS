@@ -15,9 +15,9 @@ export default function TeacherMarks() {
   const queryClient = useQueryClient();
 
   const { data: teacher } = useQuery({
-    queryKey: ['teacher-profile', user?.email],
-    queryFn: () => API.get(`/teachers?search=${user.email}&limit=1`).then((r) => r.data.data[0]),
-    enabled: !!user?.email,
+    queryKey: ['teacher-profile', user?._id],
+    queryFn: () => API.get(`/teachers?userId=${user._id}&limit=1`).then((r) => r.data.data[0]),
+    enabled: !!user?._id,
   });
 
   const { data: subjects, isLoading: subjectsLoading } = useQuery({
@@ -139,8 +139,8 @@ export default function TeacherMarks() {
               <thead className="bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300">
                 <tr>
                   <th className="p-3 text-left">Student</th>
-                  <th className="p-3 w-32">CA (20%)</th>
-                  <th className="p-3 w-32">Exam (80%)</th>
+                  <th className="p-3 w-32">Mid-Term</th>
+                  <th className="p-3 w-32">End-Term</th>
                   <th className="p-3 w-20">Total</th>
                   <th className="p-3 w-16">Grade</th>
                   <th className="p-3 w-24">Action</th>
@@ -157,21 +157,24 @@ export default function TeacherMarks() {
                   const ca = m.midterm ?? existing?.midtermMarks;
                   const exam = m.endterm ?? existing?.endTermMarks;
                   const total = ca != null && exam != null ? ca * 0.2 + exam * 0.8 : null;
+                  const studentLevel = selectedSubject?.level;
                   const grade = total != null ? (
-                    total >= 80 ? 'A' : total >= 70 ? 'B' : total >= 60 ? 'C' : total >= 50 ? 'D' : total >= 40 ? 'E' : 'F'
+                    studentLevel === 'A-Level'
+                      ? total >= 80 ? 'A' : total >= 70 ? 'B' : total >= 60 ? 'C' : total >= 50 ? 'D' : total >= 40 ? 'E' : 'F'
+                      : total >= 80 ? 'A' : total >= 70 ? 'B' : total >= 60 ? 'C' : total >= 50 ? 'D' : 'E'
                   ) : '';
                   return (
                     <tr key={s._id}>
                       <td className="p-3 text-gray-900 dark:text-white">{s.firstName} {s.lastName}</td>
                       <td className="p-3">
                         <input type="number" min="0" max="100" step="0.5"
-                          value={m.midterm ?? existing?.midtermMarks ?? ''}
+                          value={m.midterm ?? ''}
                           onChange={(e) => handleMarkChange(s._id, 'midterm', e.target.value)}
                           className="w-full px-2 py-1 border rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
                       </td>
                       <td className="p-3">
                         <input type="number" min="0" max="100" step="0.5"
-                          value={m.endterm ?? existing?.endTermMarks ?? ''}
+                          value={m.endterm ?? ''}
                           onChange={(e) => handleMarkChange(s._id, 'endterm', e.target.value)}
                           className="w-full px-2 py-1 border rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
                       </td>

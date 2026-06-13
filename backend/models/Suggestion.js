@@ -19,6 +19,7 @@ const suggestionSchema = mongoose.Schema(
       },
     ],
     likes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+    readBy: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   },
   { timestamps: true }
 );

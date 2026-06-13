@@ -10,7 +10,8 @@ const getSubjects = asyncHandler(async (req, res) => {
   let query = {};
   if (req.query.level) query.level = req.query.level;
   if (req.query.search) {
-    query.name = new RegExp(req.query.search, 'i');
+    const escaped = req.query.search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    query.name = new RegExp(escaped, 'i');
   }
   const total = await Subject.countDocuments(query);
   const subjects = await Subject.find(query)

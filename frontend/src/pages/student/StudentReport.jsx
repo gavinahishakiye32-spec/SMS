@@ -31,8 +31,11 @@ export default function StudentReport() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-bold text-gray-900 dark:text-white">My Report Card</h1>
-      <div className="flex flex-col sm:flex-row flex-wrap gap-3">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 no-print">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">My Report Card</h1>
+        <button onClick={() => window.print()} className="px-4 py-2 bg-blue-600 text-white rounded-lg">Print</button>
+      </div>
+      <div className="flex flex-col sm:flex-row flex-wrap gap-3 no-print">
         <select value={termId} onChange={(e) => setTermId(e.target.value)}
           className="w-full sm:w-auto px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
           <option value="">Latest Report</option>
@@ -94,12 +97,12 @@ export default function StudentReport() {
               </p>
             </div>
             <div className="text-right">
-              <p><strong className="text-gray-900 dark:text-white">Class Position:</strong>{' '}
+              <p><strong className="text-gray-900 dark:text-white">Position in Class:</strong>{' '}
                 <span className="text-lg font-bold text-purple-600">
                   {report.report.classRank}{report.report.totalStudentsInClass != null ? ` out of ${report.report.totalStudentsInClass}` : ''}
                 </span>
               </p>
-              <p><strong className="text-gray-900 dark:text-white">School Position:</strong> <span className="text-lg font-bold text-purple-600">{report.report.schoolRank}{report.report.totalStudentsInSchool != null ? ` out of ${report.report.totalStudentsInSchool}` : ''}</span></p>
+              <p><strong className="text-gray-900 dark:text-white">Position in School:</strong> <span className="text-lg font-bold text-purple-600">{report.report.schoolRank}{report.report.totalStudentsInSchool != null ? ` out of ${report.report.totalStudentsInSchool}` : ''}</span></p>
             </div>
           </div>
           {report.report.teacherRemark && (
@@ -113,12 +116,6 @@ export default function StudentReport() {
               <p>_________________________</p>
               <p>{report.report.headTeacherSignature || 'Head Teacher Signature'}</p>
             </div>
-          </div>
-
-          <div className="flex justify-end mt-4 print:hidden">
-            <button onClick={() => window.print()} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-              Print Report Card
-            </button>
           </div>
 
         </div>

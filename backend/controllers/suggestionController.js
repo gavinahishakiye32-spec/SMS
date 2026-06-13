@@ -62,8 +62,7 @@ const updateSuggestion = asyncHandler(async (req, res) => {
       message: 'Suggestion not found',
     });
   }
-  if (req.user.role !== 'superadmin' && req.user.role !== 'schooladmin' &&
-      suggestion.authorId.toString() !== req.user._id.toString()) {
+  if (suggestion.authorId.toString() !== req.user._id.toString()) {
     return res.status(403).json({
       success: false,
       message: 'You do not have permission for this action',
@@ -87,7 +86,7 @@ const deleteSuggestion = asyncHandler(async (req, res) => {
       message: 'Suggestion not found',
     });
   }
-  if (req.user.role === 'teacher' && suggestion.authorId.toString() !== req.user._id.toString()) {
+  if (suggestion.authorId.toString() !== req.user._id.toString()) {
     return res.status(403).json({
       success: false,
       message: 'You do not have permission to delete this suggestion',
@@ -128,6 +127,100 @@ const addComment = asyncHandler(async (req, res) => {
   });
 });
 
+const updateComment = asyncHandler(async (req, res) => {
+  const { text } = req.body;
+  if (!text) {
+    return res.status(400).json({
+      success: false,
+      message: 'Please provide comment text',
+    });
+  }
+  const suggestion = await Suggestion.findById(req.params.id);
+  if (!suggestion) {
+    return res.status(404).json({
+      success: false,
+      message: 'Suggestion not found',
+    });
+  }
+  const comment = suggestion.comments.id(req.params.commentId);
+  if (!comment) {
+    return res.status(404).json({
+      success: false,
+      message: 'Comment not found',
+    });
+  }
+  if (comment.userId.toString() !== req.user._id.toString()) {
+    return res.status(403).json({
+      success: false,
+      message: 'You do not have permission to edit this comment',
+    });
+  }
+  comment.text = text;
+  await suggestion.save();
+  return res.json({
+    success: true,
+    message: 'Comment updated successfully',
+    data: suggestion,
+  });
+});
+
+const deleteComment = asyncHandler(async (req, res) => {
+  const suggestion = await Suggestion.findById(req.params.id);
+  if (!suggestion) {
+    return res.status(404).json({
+      success: false,
+      message: 'Suggestion not found',
+    });
+  }
+  const comment = suggestion.comments.id(req.params.commentId);
+  if (!comment) {
+    return res.status(404).json({
+      success: false,
+      message: 'Comment not found',
+    });
+  }
+  if (comment.userId.toString() !== req.user._id.toString()) {
+    return res.status(403).json({
+      success: false,
+      message: 'You do not have permission to delete this comment',
+    });
+  }
+  comment.deleteOne();
+  await suggestion.save();
+  return res.json({
+    success: true,
+    message: 'Comment deleted successfully',
+  });
+});
+
+const markAsRead = asyncHandler(async (req, res) => {
+  const suggestion = await Suggestion.findById(req.params.id);
+  if (!suggestion) {
+    return res.status(404).json({
+      success: false,
+      message: 'Suggestion not found',
+    });
+  }
+  if (!suggestion.readBy.includes(req.user._id)) {
+    suggestion.readBy.push(req.user._id);
+    await suggestion.save();
+  }
+  return res.json({
+    success: true,
+    message: 'Marked as read',
+  });
+});
+
+const getUnreadCount = asyncHandler(async (req, res) => {
+  const count = await Suggestion.countDocuments({
+    readBy: { $ne: req.user._id },
+  });
+  return res.json({
+    success: true,
+    data: { count },
+  });
+});
+
 const likeSuggestion = asyncHandler(async (req, res) => {
   const suggestion = await Suggestion.findById(req.params.id);
   if (!suggestion) {
@@ -157,5 +250,9 @@ module.exports = {
   updateSuggestion,
   deleteSuggestion,
   addComment,
+  updateComment,
+  deleteComment,
+  markAsRead,
+  getUnreadCount,
   likeSuggestion,
 };

@@ -16,7 +16,7 @@ export default function TeachersPage() {
 
   const { data, isLoading } = useQuery({
     queryKey: ['teachers', page, search, levelFilter],
-    queryFn: () => API.get(`/teachers?page=${page}&limit=10&search=${search}${levelFilter ? `&level=${levelFilter}` : ''}`).then((r) => r.data),
+    queryFn: () => API.get(`/teachers?page=${page}&limit=10&search=${encodeURIComponent(search)}${levelFilter ? `&level=${levelFilter}` : ''}`).then((r) => r.data),
   });
 
   const { data: subjects } = useQuery({

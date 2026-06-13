@@ -8,7 +8,8 @@ const getParents = asyncHandler(async (req, res) => {
   const skip = (page - 1) * limit;
   let query = {};
   if (req.query.search) {
-    const searchRegex = new RegExp(req.query.search, 'i');
+    const escaped = req.query.search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const searchRegex = new RegExp(escaped, 'i');
     query.$or = [{ fullName: searchRegex }, { email: searchRegex }, { phoneNumber: searchRegex }];
   }
   const total = await Parent.countDocuments(query);

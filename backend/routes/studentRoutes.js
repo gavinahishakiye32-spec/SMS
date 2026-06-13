@@ -8,7 +8,7 @@ const { protect, authorizeRoles } = require('../middleware/auth');
 const upload = require('../middleware/upload');
 
 router.route('/')
-  .get(protect, authorizeRoles('superadmin', 'schooladmin', 'teacher'), getStudents)
+  .get(protect, authorizeRoles('superadmin', 'schooladmin', 'teacher', 'student'), getStudents)
   .post(protect, authorizeRoles('superadmin', 'schooladmin', 'teacher'), upload.single('profilePhoto'), createStudent);
 
 router.get('/:id/report', protect, authorizeRoles('superadmin', 'schooladmin', 'teacher', 'student'), getStudentReport);

@@ -34,7 +34,8 @@ export default function AcademicYearsPage() {
 
   const deleteMutation = useMutation({
     mutationFn: (id) => API.delete(`/academic-years/${id}`),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['academic-years'] }),
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['academic-years'] }); addToast('Academic year deleted', 'success'); },
+    onError: (err) => addToast(err.response?.data?.message || 'Error deleting academic year', 'error'),
   });
 
   return (

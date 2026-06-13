@@ -8,6 +8,7 @@ const Mark = require('../models/Mark');
 const Report = require('../models/Report');
 const Teacher = require('../models/Teacher');
 const Subject = require('../models/Subject');
+const { recalculateRanks } = require('./markController');
 
 const generateStudentCode = async () => {
   const year = new Date().getFullYear().toString();
@@ -28,7 +29,8 @@ const getStudents = asyncHandler(async (req, res) => {
   const skip = (page - 1) * limit;
   let query = {};
   if (req.query.search) {
-    const searchRegex = new RegExp(req.query.search, 'i');
+    const escaped = req.query.search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const searchRegex = new RegExp(escaped, 'i');
     query.$or = [
       { firstName: searchRegex },
       { lastName: searchRegex },
@@ -46,23 +48,27 @@ const getStudents = asyncHandler(async (req, res) => {
   }
   if (req.user.role === 'teacher') {
     const teacher = await Teacher.findOne({ userId: req.user._id }).populate({ path: 'subjectIds', select: 'classIds' });
-    if (teacher) {
-      const classIdSet = new Set();
-      for (const subject of teacher.subjectIds) {
-        for (const cid of subject.classIds) {
-          classIdSet.add(cid.toString());
-        }
-      }
-      const allowedClassIds = [...classIdSet];
-      const specificClassId = typeof query.classId === 'string' ? query.classId : null;
-      if (specificClassId) {
-        if (!allowedClassIds.includes(specificClassId)) {
-          return res.status(403).json({ success: false, message: 'You do not have permission to view students in this class' });
-        }
-      } else {
-        query.classId = allowedClassIds.length > 0 ? { $in: allowedClassIds } : { $in: [] };
+    if (!teacher) {
+      return res.status(403).json({ success: false, message: 'Teacher profile not found' });
+    }
+    const classIdSet = new Set();
+    for (const subject of teacher.subjectIds) {
+      for (const cid of subject.classIds) {
+        classIdSet.add(cid.toString());
       }
     }
+    const allowedClassIds = [...classIdSet];
+    const specificClassId = typeof query.classId === 'string' ? query.classId : null;
+    if (specificClassId) {
+      if (!allowedClassIds.includes(specificClassId)) {
+        return res.status(403).json({ success: false, message: 'You do not have permission to view students in this class' });
+      }
+    } else {
+      query.classId = allowedClassIds.length > 0 ? { $in: allowedClassIds } : { $in: [] };
+    }
+  }
+  if (req.user.role === 'student') {
+    query.userId = req.user._id;
   }
   const total = await Student.countDocuments(query);
   let studentQuery = Student.find(query);
@@ -95,17 +101,18 @@ const createStudent = asyncHandler(async (req, res) => {
   }
   if (req.user.role === 'teacher') {
     const teacher = await Teacher.findOne({ userId: req.user._id }).populate({ path: 'subjectIds', select: 'classIds' });
-    if (teacher) {
-      const allowedClassIds = new Set();
-      for (const subject of teacher.subjectIds) {
-        for (const cid of subject.classIds) allowedClassIds.add(cid.toString());
-      }
-      if (!allowedClassIds.has(classId)) {
-        return res.status(403).json({
-          success: false,
-          message: 'You do not have permission to create students in this class',
-        });
-      }
+    if (!teacher) {
+      return res.status(403).json({ success: false, message: 'Teacher profile not found' });
+    }
+    const allowedClassIds = new Set();
+    for (const subject of teacher.subjectIds) {
+      for (const cid of subject.classIds) allowedClassIds.add(cid.toString());
+    }
+    if (!allowedClassIds.has(classId)) {
+      return res.status(403).json({
+        success: false,
+        message: 'You do not have permission to create students in this class',
+      });
     }
   }
   let academicYear = academicYearId;
@@ -247,18 +254,19 @@ const updateStudent = asyncHandler(async (req, res) => {
   }
   if (req.user.role === 'teacher') {
     const teacher = await Teacher.findOne({ userId: req.user._id }).populate({ path: 'subjectIds', select: 'classIds' });
-    if (teacher) {
-      const allowedClassIds = new Set();
-      for (const subject of teacher.subjectIds) {
-        for (const cid of subject.classIds) allowedClassIds.add(cid.toString());
-      }
-      const targetClassId = (req.body.classId || student.classId).toString();
-      if (!allowedClassIds.has(targetClassId)) {
-        return res.status(403).json({
-          success: false,
-          message: 'You do not have permission to update students in this class',
-        });
-      }
+    if (!teacher) {
+      return res.status(403).json({ success: false, message: 'Teacher profile not found' });
+    }
+    const allowedClassIds = new Set();
+    for (const subject of teacher.subjectIds) {
+      for (const cid of subject.classIds) allowedClassIds.add(cid.toString());
+    }
+    const targetClassId = (req.body.classId || student.classId).toString();
+    if (!allowedClassIds.has(targetClassId)) {
+      return res.status(403).json({
+        success: false,
+        message: 'You do not have permission to update students in this class',
+      });
     }
   }
   const { sectionName } = req.body;
@@ -295,23 +303,29 @@ const deleteStudent = asyncHandler(async (req, res) => {
   }
   if (req.user.role === 'teacher') {
     const teacher = await Teacher.findOne({ userId: req.user._id }).populate({ path: 'subjectIds', select: 'classIds' });
-    if (teacher) {
-      const allowedClassIds = new Set();
-      for (const subject of teacher.subjectIds) {
-        for (const cid of subject.classIds) allowedClassIds.add(cid.toString());
-      }
-      if (!allowedClassIds.has(student.classId.toString())) {
-        return res.status(403).json({
-          success: false,
-          message: 'You do not have permission to delete students in this class',
-        });
-      }
+    if (!teacher) {
+      return res.status(403).json({ success: false, message: 'Teacher profile not found' });
+    }
+    const allowedClassIds = new Set();
+    for (const subject of teacher.subjectIds) {
+      for (const cid of subject.classIds) allowedClassIds.add(cid.toString());
+    }
+    if (!allowedClassIds.has(student.classId.toString())) {
+      return res.status(403).json({
+        success: false,
+        message: 'You do not have permission to delete students in this class',
+      });
     }
   }
+  const reportsToDelete = await Report.find({ studentId: student._id }).select('termId academicYearId').lean();
+  const affectedPairs = [...new Map(reportsToDelete.map(r => [`${r.termId}|${r.academicYearId}`, { termId: r.termId, academicYearId: r.academicYearId }])).values()];
   if (student.userId) await User.deleteOne({ _id: student.userId });
   await Mark.deleteMany({ studentId: student._id });
   await Report.deleteMany({ studentId: student._id });
   await Student.deleteOne({ _id: student._id });
+  for (const pair of affectedPairs) {
+    await recalculateRanks(pair.termId, pair.academicYearId);
+  }
   return res.json({
     success: true,
     message: 'Student deleted successfully',
@@ -341,17 +355,18 @@ const getStudentReport = asyncHandler(async (req, res) => {
   }
   if (req.user.role === 'teacher') {
     const teacher = await Teacher.findOne({ userId: req.user._id }).populate({ path: 'subjectIds', select: 'classIds' });
-    if (teacher) {
-      const classIdSet = new Set();
-      for (const subject of teacher.subjectIds) {
-        for (const cid of subject.classIds) classIdSet.add(cid.toString());
-      }
-      if (!classIdSet.has(student.classId?._id?.toString() || student.classId?.toString())) {
-        return res.status(403).json({
-          success: false,
-          message: 'You do not have permission to view this report',
-        });
-      }
+    if (!teacher) {
+      return res.status(403).json({ success: false, message: 'Teacher profile not found' });
+    }
+    const classIdSet = new Set();
+    for (const subject of teacher.subjectIds) {
+      for (const cid of subject.classIds) classIdSet.add(cid.toString());
+    }
+    if (!classIdSet.has(student.classId?._id?.toString() || student.classId?.toString())) {
+      return res.status(403).json({
+        success: false,
+        message: 'You do not have permission to view this report',
+      });
     }
   }
   const { termId } = req.query;

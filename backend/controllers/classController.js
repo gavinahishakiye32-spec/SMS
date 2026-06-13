@@ -5,6 +5,7 @@ const Section = require('../models/Section');
 const Mark = require('../models/Mark');
 const Report = require('../models/Report');
 const Teacher = require('../models/Teacher');
+const { recalculateRanks } = require('./markController');
 
 const getClasses = asyncHandler(async (req, res) => {
   const page = parseInt(req.query.page) || 1;
@@ -13,7 +14,8 @@ const getClasses = asyncHandler(async (req, res) => {
   let query = {};
   if (req.query.level) query.level = req.query.level;
   if (req.query.search) {
-    query.name = new RegExp(req.query.search, 'i');
+    const escaped = req.query.search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    query.name = new RegExp(escaped, 'i');
   }
   const total = await Class.countDocuments(query);
   const classes = await Class.find(query)
@@ -90,11 +92,16 @@ const deleteClass = asyncHandler(async (req, res) => {
       message: 'Class not found',
     });
   }
+  const reportsToDelete = await Report.find({ classId: classItem._id }).select('termId academicYearId').lean();
+  const affectedPairs = [...new Map(reportsToDelete.map(r => [`${r.termId}|${r.academicYearId}`, { termId: r.termId, academicYearId: r.academicYearId }])).values()];
   await Mark.deleteMany({ classId: classItem._id });
   await Report.deleteMany({ classId: classItem._id });
   await Section.deleteMany({ classId: classItem._id });
   await Student.updateMany({ classId: classItem._id }, { classId: null, sectionId: null });
   await Class.deleteOne({ _id: classItem._id });
+  for (const pair of affectedPairs) {
+    await recalculateRanks(pair.termId, pair.academicYearId);
+  }
   return res.json({
     success: true,
     message: 'Class deleted successfully',
@@ -104,17 +111,18 @@ const deleteClass = asyncHandler(async (req, res) => {
 const getClassStudents = asyncHandler(async (req, res) => {
   if (req.user.role === 'teacher') {
     const teacher = await Teacher.findOne({ userId: req.user._id }).populate({ path: 'subjectIds', select: 'classIds' });
-    if (teacher) {
-      const classIdSet = new Set();
-      for (const subject of teacher.subjectIds) {
-        for (const cid of subject.classIds) classIdSet.add(cid.toString());
-      }
-      if (!classIdSet.has(req.params.id.toString())) {
-        return res.status(403).json({
-          success: false,
-          message: 'You do not have permission to view students in this class',
-        });
-      }
+    if (!teacher) {
+      return res.status(403).json({ success: false, message: 'Teacher profile not found' });
+    }
+    const classIdSet = new Set();
+    for (const subject of teacher.subjectIds) {
+      for (const cid of subject.classIds) classIdSet.add(cid.toString());
+    }
+    if (!classIdSet.has(req.params.id.toString())) {
+      return res.status(403).json({
+        success: false,
+        message: 'You do not have permission to view students in this class',
+      });
     }
   }
   const students = await Student.find({ classId: req.params.id })
@@ -128,17 +136,18 @@ const getClassStudents = asyncHandler(async (req, res) => {
 const getClassPerformance = asyncHandler(async (req, res) => {
   if (req.user.role === 'teacher') {
     const teacher = await Teacher.findOne({ userId: req.user._id }).populate({ path: 'subjectIds', select: 'classIds' });
-    if (teacher) {
-      const classIdSet = new Set();
-      for (const subject of teacher.subjectIds) {
-        for (const cid of subject.classIds) classIdSet.add(cid.toString());
-      }
-      if (!classIdSet.has(req.params.id.toString())) {
-        return res.status(403).json({
-          success: false,
-          message: 'You do not have permission to view performance for this class',
-        });
-      }
+    if (!teacher) {
+      return res.status(403).json({ success: false, message: 'Teacher profile not found' });
+    }
+    const classIdSet = new Set();
+    for (const subject of teacher.subjectIds) {
+      for (const cid of subject.classIds) classIdSet.add(cid.toString());
+    }
+    if (!classIdSet.has(req.params.id.toString())) {
+      return res.status(403).json({
+        success: false,
+        message: 'You do not have permission to view performance for this class',
+      });
     }
   }
   const { termId } = req.query;

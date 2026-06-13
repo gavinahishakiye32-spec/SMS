@@ -8,7 +8,7 @@ router.route('/')
   .post(protect, authorizeRoles('teacher', 'superadmin', 'schooladmin'), addMarks);
 
 router.get('/student/:studentId', protect, authorizeRoles('superadmin', 'schooladmin', 'teacher', 'student'), getStudentMarks);
-router.get('/student/:studentId/subject/:subjectId', protect, authorizeRoles('superadmin', 'schooladmin', 'teacher'), getStudentSubjectMarks);
+router.get('/student/:studentId/subject/:subjectId', protect, authorizeRoles('superadmin', 'schooladmin', 'teacher', 'student'), getStudentSubjectMarks);
 router.get('/class/:classId', protect, authorizeRoles('superadmin', 'schooladmin', 'teacher'), getClassMarks);
 
 router.route('/:id')

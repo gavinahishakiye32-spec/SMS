@@ -9,10 +9,11 @@ const getTeachers = asyncHandler(async (req, res) => {
   const skip = (page - 1) * limit;
   let query = {};
   if (req.user.role === 'teacher') {
-    query.email = req.user.email;
+    query.userId = req.user._id;
   } else {
     if (req.query.search) {
-      const searchRegex = new RegExp(req.query.search, 'i');
+      const escaped = req.query.search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const searchRegex = new RegExp(escaped, 'i');
       query.$or = [{ firstName: searchRegex }, { lastName: searchRegex }, { email: searchRegex }];
     }
     if (req.query.level) {

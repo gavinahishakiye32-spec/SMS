@@ -28,17 +28,18 @@ const getStudentReport = asyncHandler(async (req, res) => {
   }
   if (req.user.role === 'teacher') {
     const teacher = await Teacher.findOne({ userId: req.user._id }).populate({ path: 'subjectIds', select: 'classIds' });
-    if (teacher) {
-      const classIdSet = new Set();
-      for (const subject of teacher.subjectIds) {
-        for (const cid of subject.classIds) classIdSet.add(cid.toString());
-      }
-      if (!classIdSet.has(student.classId?._id?.toString() || student.classId?.toString())) {
-        return res.status(403).json({
-          success: false,
-          message: 'You do not have permission to view this report',
-        });
-      }
+    if (!teacher) {
+      return res.status(403).json({ success: false, message: 'Teacher profile not found' });
+    }
+    const classIdSet = new Set();
+    for (const subject of teacher.subjectIds) {
+      for (const cid of subject.classIds) classIdSet.add(cid.toString());
+    }
+    if (!classIdSet.has(student.classId?._id?.toString() || student.classId?.toString())) {
+      return res.status(403).json({
+        success: false,
+        message: 'You do not have permission to view this report',
+      });
     }
   }
   let query = { studentId };
@@ -46,7 +47,8 @@ const getStudentReport = asyncHandler(async (req, res) => {
   if (academicYearId) query.academicYearId = academicYearId;
   const report = await Report.findOne(query)
     .populate('termId', 'name')
-    .populate('academicYearId', 'year');
+    .populate('academicYearId', 'year')
+    .sort({ createdAt: -1 });
   if (!report) {
     return res.json({
       success: true,
@@ -67,17 +69,18 @@ const getClassReport = asyncHandler(async (req, res) => {
   const { classId } = req.params;
   if (req.user.role === 'teacher') {
     const teacher = await Teacher.findOne({ userId: req.user._id }).populate({ path: 'subjectIds', select: 'classIds' });
-    if (teacher) {
-      const classIdSet = new Set();
-      for (const subject of teacher.subjectIds) {
-        for (const cid of subject.classIds) classIdSet.add(cid.toString());
-      }
-      if (!classIdSet.has(classId.toString())) {
-        return res.status(403).json({
-          success: false,
-          message: 'You do not have permission to view reports for this class',
-        });
-      }
+    if (!teacher) {
+      return res.status(403).json({ success: false, message: 'Teacher profile not found' });
+    }
+    const classIdSet = new Set();
+    for (const subject of teacher.subjectIds) {
+      for (const cid of subject.classIds) classIdSet.add(cid.toString());
+    }
+    if (!classIdSet.has(classId.toString())) {
+      return res.status(403).json({
+        success: false,
+        message: 'You do not have permission to view reports for this class',
+      });
     }
   }
   const { termId, academicYearId } = req.query;
@@ -130,22 +133,23 @@ const searchReports = asyncHandler(async (req, res) => {
   }
   if (req.user.role === 'teacher') {
     const teacher = await Teacher.findOne({ userId: req.user._id }).populate({ path: 'subjectIds', select: 'classIds' });
-    if (teacher) {
-      const classIdSet = new Set();
-      for (const subject of teacher.subjectIds) {
-        for (const cid of subject.classIds) classIdSet.add(cid.toString());
+    if (!teacher) {
+      return res.status(403).json({ success: false, message: 'Teacher profile not found' });
+    }
+    const classIdSet = new Set();
+    for (const subject of teacher.subjectIds) {
+      for (const cid of subject.classIds) classIdSet.add(cid.toString());
+    }
+    const allowedClassIds = [...classIdSet];
+    const specificClassId = typeof studentQuery.classId === 'string' ? studentQuery.classId : null;
+    if (specificClassId) {
+      if (!allowedClassIds.includes(specificClassId)) {
+        return res.status(403).json({ success: false, message: 'You do not have permission to search reports for this class' });
       }
-      const allowedClassIds = [...classIdSet];
-      const specificClassId = typeof studentQuery.classId === 'string' ? studentQuery.classId : null;
-      if (specificClassId) {
-        if (!allowedClassIds.includes(specificClassId)) {
-          return res.status(403).json({ success: false, message: 'You do not have permission to search reports for this class' });
-        }
-      } else if (allowedClassIds.length > 0) {
-        studentQuery.classId = { $in: allowedClassIds };
-      } else {
-        studentQuery.classId = { $in: [] };
-      }
+    } else if (allowedClassIds.length > 0) {
+      studentQuery.classId = { $in: allowedClassIds };
+    } else {
+      studentQuery.classId = { $in: [] };
     }
   }
 
@@ -200,17 +204,18 @@ const getStudentReportPdf = asyncHandler(async (req, res) => {
   }
   if (req.user.role === 'teacher') {
     const teacher = await Teacher.findOne({ userId: req.user._id }).populate({ path: 'subjectIds', select: 'classIds' });
-    if (teacher) {
-      const classIdSet = new Set();
-      for (const subject of teacher.subjectIds) {
-        for (const cid of subject.classIds) classIdSet.add(cid.toString());
-      }
-      if (!classIdSet.has(student.classId?.toString())) {
-        return res.status(403).json({
-          success: false,
-          message: 'You do not have permission to download this report',
-        });
-      }
+    if (!teacher) {
+      return res.status(403).json({ success: false, message: 'Teacher profile not found' });
+    }
+    const classIdSet = new Set();
+    for (const subject of teacher.subjectIds) {
+      for (const cid of subject.classIds) classIdSet.add(cid.toString());
+    }
+    if (!classIdSet.has(student.classId?.toString())) {
+      return res.status(403).json({
+        success: false,
+        message: 'You do not have permission to download this report',
+      });
     }
   }
   const reportData = await getStudentReportData(studentId, req.query);
@@ -307,7 +312,7 @@ const getStudentReportPdf = asyncHandler(async (req, res) => {
     header('OVERALL PERFORMANCE', 12);
     doc.moveDown(0.3);
     doc.fontSize(10);
-    const totalLabel = `Total Marks: ${((r.midtermTotal || 0) + (r.endTermTotal || 0)).toFixed(0)}`;
+    const totalLabel = `Total Marks: ${(r.combinedTotal || 0).toFixed(0)}`;
     const avgLabel = `Average: ${r.overallAverage ? r.overallAverage.toFixed(0) : '0'}`;
     const rankLabel = `Class Position: ${r.classRank || '?'}${r.totalStudentsInClass != null ? ' out of ' + r.totalStudentsInClass : ''}`;
     const schoolRankLabel = `School Position: ${r.schoolRank || '?'}${r.totalStudentsInSchool != null ? ' out of ' + r.totalStudentsInSchool : ''}`;
@@ -360,17 +365,18 @@ const updateReportRemark = asyncHandler(async (req, res) => {
   }
   if (req.user.role === 'teacher') {
     const teacher = await Teacher.findOne({ userId: req.user._id }).populate({ path: 'subjectIds', select: 'classIds' });
-    if (teacher) {
-      const classIdSet = new Set();
-      for (const subject of teacher.subjectIds) {
-        for (const cid of subject.classIds) classIdSet.add(cid.toString());
-      }
-      if (!classIdSet.has(report.classId?.toString())) {
-        return res.status(403).json({
-          success: false,
-          message: 'You do not have permission to update remarks for this report',
-        });
-      }
+    if (!teacher) {
+      return res.status(403).json({ success: false, message: 'Teacher profile not found' });
+    }
+    const classIdSet = new Set();
+    for (const subject of teacher.subjectIds) {
+      for (const cid of subject.classIds) classIdSet.add(cid.toString());
+    }
+    if (!classIdSet.has(report.classId?.toString())) {
+      return res.status(403).json({
+        success: false,
+        message: 'You do not have permission to update remarks for this report',
+      });
     }
   }
   if (teacherRemark !== undefined) report.teacherRemark = teacherRemark || '';
@@ -395,7 +401,8 @@ async function getStudentReportData(studentId, query = {}) {
   if (academicYearId) reportQuery.academicYearId = academicYearId;
   const report = await Report.findOne(reportQuery)
     .populate('termId', 'name startDate endDate')
-    .populate('academicYearId', 'year');
+    .populate('academicYearId', 'year')
+    .sort({ createdAt: -1 });
   if (!report) return null;
   const marks = await Mark.find({ studentId, termId: report.termId, academicYearId: report.academicYearId })
     .populate('subjectId', 'name level');

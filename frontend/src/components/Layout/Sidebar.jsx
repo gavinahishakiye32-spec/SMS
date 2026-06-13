@@ -1,34 +1,53 @@
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { useQuery } from '@tanstack/react-query';
+import API from '../../services/api';
+import {
+  LayoutDashboard,
+  GraduationCap,
+  Presentation,
+  Users,
+  School,
+  Ruler,
+  BookOpen,
+  CalendarDays,
+  CalendarRange,
+  CheckSquare,
+  FileText,
+  BarChart3,
+  Lightbulb,
+  Settings,
+} from 'lucide-react';
 
 const superAdminLinks = [
-  { to: '/admin/dashboard', label: 'Dashboard', icon: '📊' },
-  { to: '/admin/students', label: 'Students', icon: '👨‍🎓' },
-  { to: '/admin/teachers', label: 'Teachers', icon: '👨‍🏫' },
-  { to: '/admin/parents', label: 'Parents', icon: '👪' },
-  { to: '/admin/classes', label: 'Classes', icon: '🏫' },
-  { to: '/admin/sections', label: 'Sections', icon: '📐' },
-  { to: '/admin/subjects', label: 'Subjects', icon: '📚' },
-  { to: '/admin/academic-years', label: 'Academic Years', icon: '📅' },
-  { to: '/admin/terms', label: 'Terms', icon: '🗓️' },
-  { to: '/admin/marks', label: 'Marks', icon: '✅' },
-  { to: '/admin/reports', label: 'Reports', icon: '📄' },
-  { to: '/admin/analytics', label: 'Analytics', icon: '📈' },
-  { to: '/admin/suggestions', label: 'Suggestions', icon: '💡' },
-  { to: '/admin/settings', label: 'Settings', icon: '⚙️' },
+  { to: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard, color: '#3B82F6' },
+  { to: '/admin/students', label: 'Students', icon: GraduationCap, color: '#10B981' },
+  { to: '/admin/teachers', label: 'Teachers', icon: Presentation, color: '#8B5CF6' },
+  { to: '/admin/parents', label: 'Parents', icon: Users, color: '#EC4899' },
+  { to: '/admin/classes', label: 'Classes', icon: School, color: '#F59E0B' },
+  { to: '/admin/sections', label: 'Sections', icon: Ruler, color: '#14B8A6' },
+  { to: '/admin/subjects', label: 'Subjects', icon: BookOpen, color: '#EF4444' },
+  { to: '/admin/academic-years', label: 'Academic Years', icon: CalendarDays, color: '#06B6D4' },
+  { to: '/admin/terms', label: 'Terms', icon: CalendarRange, color: '#6366F1' },
+  { to: '/admin/marks', label: 'Marks', icon: CheckSquare, color: '#84CC16' },
+  { to: '/admin/reports', label: 'Reports', icon: FileText, color: '#64748B' },
+  { to: '/admin/analytics', label: 'Analytics', icon: BarChart3, color: '#A855F7' },
+  { to: '/admin/suggestions', label: 'Suggestions', icon: Lightbulb, color: '#FBBF24' },
+  { to: '/admin/settings', label: 'Settings', icon: Settings, color: '#6B7280' },
 ];
 
 const teacherLinks = [
-  { to: '/teacher/dashboard', label: 'Dashboard', icon: '📊' },
-  { to: '/teacher/subjects', label: 'My Subjects', icon: '📚' },
-  { to: '/admin/students', label: 'Students', icon: '👨‍🎓' },
-  { to: '/teacher/marks', label: 'Marks Entry', icon: '✅' },
+  { to: '/teacher/dashboard', label: 'Dashboard', icon: LayoutDashboard, color: '#3B82F6' },
+  { to: '/teacher/subjects', label: 'My Subjects', icon: BookOpen, color: '#EF4444' },
+  { to: '/admin/students', label: 'Students', icon: GraduationCap, color: '#10B981' },
+  { to: '/teacher/marks', label: 'Marks Entry', icon: CheckSquare, color: '#84CC16' },
+  { to: '/admin/suggestions', label: 'Suggestions', icon: Lightbulb, color: '#FBBF24' },
 ];
 
 const studentLinks = [
-  { to: '/student/dashboard', label: 'Dashboard', icon: '📊' },
-  { to: '/student/report', label: 'Report Card', icon: '📄' },
-  { to: '/student/performance', label: 'Performance', icon: '📈' },
+  { to: '/student/dashboard', label: 'Dashboard', icon: LayoutDashboard, color: '#3B82F6' },
+  { to: '/student/report', label: 'Report Card', icon: FileText, color: '#64748B' },
+  { to: '/student/performance', label: 'Performance', icon: BarChart3, color: '#A855F7' },
 ];
 
 export default function Sidebar({ open, onClose }) {
@@ -38,6 +57,15 @@ export default function Sidebar({ open, onClose }) {
     : user?.role === 'teacher'
     ? teacherLinks
     : studentLinks;
+
+  const { data: unreadData } = useQuery({
+    queryKey: ['suggestions-unread'],
+    queryFn: () => API.get('/suggestions/unread-count').then((r) => r.data),
+    enabled: !!user && user.role !== 'student',
+    refetchInterval: 5000,
+    refetchOnWindowFocus: true,
+  });
+  const unreadCount = unreadData?.data?.count || 0;
 
   return (
     <>
@@ -61,10 +89,17 @@ export default function Sidebar({ open, onClose }) {
                 }`
               }
             >
-              <span className="text-base">{link.icon}</span>
+              <link.icon className="w-5 h-5 icon-color" style={{ '--icon-clr': link.color }} />
               <span>{link.label}</span>
+              {link.label === 'Suggestions' && unreadCount > 0 && (
+                <span className="ml-auto bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">{unreadCount > 99 ? '99+' : unreadCount}</span>
+              )}
             </NavLink>
           ))}
+          <style>{`
+            .icon-color { color: var(--icon-clr); }
+            [aria-current="page"] .icon-color { color: white; }
+          `}</style>
         </nav>
       </aside>
     </>

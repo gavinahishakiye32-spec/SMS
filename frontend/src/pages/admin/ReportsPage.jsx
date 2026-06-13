@@ -70,102 +70,104 @@ export default function ReportsPage() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Reports</h1>
+      <div className="no-print">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Reports</h1>
 
-      <div className="bg-white dark:bg-gray-900 rounded-xl shadow p-4 sm:p-5">
-        <h2 className="text-lg font-bold mb-3 text-gray-900 dark:text-white">Search Reports</h2>
-        <div className="flex flex-col sm:flex-row flex-wrap gap-2 mb-2">
-          <input placeholder="Search by name, student ID, or code..."
-            value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full sm:flex-1 px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
-          <select value={searchClassId} onChange={(e) => setSearchClassId(e.target.value)}
-            className="w-full sm:w-auto px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
-            <option value="">All Classes</option>
-            {classes ? classes.map((c) => <option key={c._id} value={c._id}>{c.name}</option>) : <option disabled>Loading...</option>}
-          </select>
-          <select value={searchTermId} onChange={(e) => setSearchTermId(e.target.value)}
-            className="w-full sm:w-auto px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
-            <option value="">Latest Term</option>
-            {terms ? terms.map((t) => <option key={t._id} value={t._id}>{t.name}</option>) : <option disabled>Loading...</option>}
-          </select>
-          <select value={searchAcademicYearId} onChange={(e) => setSearchAcademicYearId(e.target.value)}
-            className="w-full sm:w-auto px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
-            <option value="">All Years</option>
-            {academicYears ? academicYears.map((y) => <option key={y._id} value={y._id}>{y.year}</option>) : <option disabled>Loading...</option>}
-          </select>
-          <button onClick={handleSearch} className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-lg">Search</button>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="bg-white dark:bg-gray-900 rounded-xl shadow p-4 sm:p-5">
-          <h2 className="text-lg font-bold mb-3 text-gray-900 dark:text-white">Quick Student Lookup</h2>
+          <h2 className="text-lg font-bold mb-3 text-gray-900 dark:text-white">Search Reports</h2>
           <div className="flex flex-col sm:flex-row flex-wrap gap-2 mb-2">
-            <input placeholder="Student ID" value={studentId} onChange={(e) => setStudentId(e.target.value)}
+            <input placeholder="Search by name, student ID, or code..."
+              value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full sm:flex-1 px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
-            <select value={studentTermId} onChange={(e) => setStudentTermId(e.target.value)}
+            <select value={searchClassId} onChange={(e) => setSearchClassId(e.target.value)}
               className="w-full sm:w-auto px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
-              <option value="">Latest</option>
-              {terms ? terms.map((t) => <option key={t._id} value={t._id}>{t.name}</option>) : <option disabled>Loading...</option>}
-            </select>
-          </div>
-          <button onClick={searchStudent} className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-lg">Lookup</button>
-        </div>
-        <div className="bg-white dark:bg-gray-900 rounded-xl shadow p-4 sm:p-5">
-          <h2 className="text-lg font-bold mb-3 text-gray-900 dark:text-white">Class Report</h2>
-          <div className="flex flex-col sm:flex-row gap-2 mb-2">
-            <select value={classId} onChange={(e) => setClassId(e.target.value)}
-              className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
-              <option value="">Select Class</option>
+              <option value="">All Classes</option>
               {classes ? classes.map((c) => <option key={c._id} value={c._id}>{c.name}</option>) : <option disabled>Loading...</option>}
             </select>
+            <select value={searchTermId} onChange={(e) => setSearchTermId(e.target.value)}
+              className="w-full sm:w-auto px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+              <option value="">Latest Term</option>
+              {terms ? terms.map((t) => <option key={t._id} value={t._id}>{t.name}</option>) : <option disabled>Loading...</option>}
+            </select>
+            <select value={searchAcademicYearId} onChange={(e) => setSearchAcademicYearId(e.target.value)}
+              className="w-full sm:w-auto px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+              <option value="">All Years</option>
+              {academicYears ? academicYears.map((y) => <option key={y._id} value={y._id}>{y.year}</option>) : <option disabled>Loading...</option>}
+            </select>
+            <button onClick={handleSearch} className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-lg">Search</button>
           </div>
-          <button onClick={searchClass} className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-lg">View Rankings</button>
         </div>
-      </div>
 
-      {loading && <p className="text-center text-gray-500 dark:text-gray-400">Loading...</p>}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="bg-white dark:bg-gray-900 rounded-xl shadow p-4 sm:p-5">
+            <h2 className="text-lg font-bold mb-3 text-gray-900 dark:text-white">Quick Student Lookup</h2>
+            <div className="flex flex-col sm:flex-row flex-wrap gap-2 mb-2">
+              <input placeholder="Student ID" value={studentId} onChange={(e) => setStudentId(e.target.value)}
+                className="w-full sm:flex-1 px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
+              <select value={studentTermId} onChange={(e) => setStudentTermId(e.target.value)}
+                className="w-full sm:w-auto px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+                <option value="">Latest</option>
+                {terms ? terms.map((t) => <option key={t._id} value={t._id}>{t.name}</option>) : <option disabled>Loading...</option>}
+              </select>
+            </div>
+            <button onClick={searchStudent} className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-lg">Lookup</button>
+          </div>
+          <div className="bg-white dark:bg-gray-900 rounded-xl shadow p-4 sm:p-5">
+            <h2 className="text-lg font-bold mb-3 text-gray-900 dark:text-white">Class Report</h2>
+            <div className="flex flex-col sm:flex-row gap-2 mb-2">
+              <select value={classId} onChange={(e) => setClassId(e.target.value)}
+                className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+                <option value="">Select Class</option>
+                {classes ? classes.map((c) => <option key={c._id} value={c._id}>{c.name}</option>) : <option disabled>Loading...</option>}
+              </select>
+            </div>
+            <button onClick={searchClass} className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-lg">View Rankings</button>
+          </div>
+        </div>
 
-      {searchResults && !loading && (
-        <div className="bg-white dark:bg-gray-900 rounded-xl shadow p-5">
-          <h2 className="text-lg font-bold mb-3 text-gray-900 dark:text-white">Search Results ({searchResults.length})</h2>
-          {searchResults.length === 0 ? (
-            <p className="text-gray-500 dark:text-gray-400 text-center py-4">No results found</p>
-          ) : (
-            <div className="space-y-2 max-h-96 overflow-y-auto">
-              {searchResults.map((item) => (
-                <div key={item.student._id} className="border rounded-lg p-3 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer"
-                  onClick={() => {
-                    if (item.reports.length > 0) {
-                      loadStudentReport(item.student._id, item.reports[0].termId?._id);
-                    } else {
-                      loadStudentReport(item.student._id, searchTermId);
-                    }
-                  }}>
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <p className="font-medium text-gray-900 dark:text-white">
-                        {item.student?.firstName} {item.student?.lastName}
-                      </p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">
-                        {item.student?.studentCode} | {item.student?.classId?.name} {item.student?.sectionId?.name || ''}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <span className="text-sm text-gray-500 dark:text-gray-400">{item.reports.length} report(s)</span>
-                      {item.reports.length > 0 && (
-                        <p className="text-sm font-medium text-blue-600">
-                          Avg: {item.reports[0].overallAverage?.toFixed(1)} | {item.reports[0].grade}
+        {loading && <p className="text-center text-gray-500 dark:text-gray-400">Loading...</p>}
+
+        {searchResults && !loading && (
+          <div className="bg-white dark:bg-gray-900 rounded-xl shadow p-5">
+            <h2 className="text-lg font-bold mb-3 text-gray-900 dark:text-white">Search Results ({searchResults.length})</h2>
+            {searchResults.length === 0 ? (
+              <p className="text-gray-500 dark:text-gray-400 text-center py-4">No results found</p>
+            ) : (
+              <div className="space-y-2 max-h-96 overflow-y-auto">
+                {searchResults.map((item) => (
+                  <div key={item.student._id} className="border rounded-lg p-3 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer"
+                    onClick={() => {
+                      if (item.reports.length > 0) {
+                        loadStudentReport(item.student._id, item.reports[0].termId?._id);
+                      } else {
+                        loadStudentReport(item.student._id, searchTermId);
+                      }
+                    }}>
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <p className="font-medium text-gray-900 dark:text-white">
+                          {item.student?.firstName} {item.student?.lastName}
                         </p>
-                      )}
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                          {item.student?.studentCode} | {item.student?.classId?.name} {item.student?.sectionId?.name || ''}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-sm text-gray-500 dark:text-gray-400">{item.reports.length} report(s)</span>
+                        {item.reports.length > 0 && (
+                          <p className="text-sm font-medium text-blue-600">
+                            Avg: {item.reports[0].overallAverage?.toFixed(1)} | {item.reports[0].grade}
+                          </p>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
 
       {report && report.report && (
         <div className="bg-white dark:bg-gray-900 rounded-xl shadow p-6 print:p-0" id="report-card">
@@ -222,12 +224,12 @@ export default function ReportsPage() {
               </p>
             </div>
             <div className="text-right">
-              <p><strong className="text-gray-900 dark:text-white">Class Position:</strong>{' '}
+              <p><strong className="text-gray-900 dark:text-white">Position in Class:</strong>{' '}
                 <span className="text-lg font-bold text-purple-600">
                   {report.report.classRank}{report.report.totalStudentsInClass != null ? ` out of ${report.report.totalStudentsInClass}` : ''}
                 </span>
               </p>
-              <p><strong className="text-gray-900 dark:text-white">School Position:</strong> <span className="text-lg font-bold text-purple-600">{report.report.schoolRank}{report.report.totalStudentsInSchool != null ? ` out of ${report.report.totalStudentsInSchool}` : ''}</span></p>
+              <p><strong className="text-gray-900 dark:text-white">Position in School:</strong> <span className="text-lg font-bold text-purple-600">{report.report.schoolRank}{report.report.totalStudentsInSchool != null ? ` out of ${report.report.totalStudentsInSchool}` : ''}</span></p>
             </div>
           </div>
 
@@ -255,7 +257,7 @@ export default function ReportsPage() {
       )}
 
       {report && report.classReport && (
-        <div className="bg-white dark:bg-gray-900 rounded-xl shadow p-5">
+        <div className="bg-white dark:bg-gray-900 rounded-xl shadow p-5 no-print">
           <h2 className="text-lg font-bold mb-4 text-gray-900 dark:text-white">Class Rankings</h2>
           <table className="w-full text-sm">
             <thead className="bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300">

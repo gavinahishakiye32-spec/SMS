@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useCallback } from 'react';
+import { Check, X, Info } from 'lucide-react';
 
 const ToastContext = createContext();
 
@@ -36,9 +37,13 @@ export function ToastProvider({ children }) {
                 : 'bg-blue-600 text-white'
             }`}
           >
-            <span>{t.type === 'success' ? '✓' : t.type === 'error' ? '✕' : 'ℹ'}</span>
+            <span className="w-4 h-4">
+              {t.type === 'success' ? <Check className="w-full h-full" /> : t.type === 'error' ? <X className="w-full h-full" /> : <Info className="w-full h-full" />}
+            </span>
             <span>{t.message}</span>
-            <button onClick={() => removeToast(t.id)} className="ml-2 opacity-70 hover:opacity-100">✕</button>
+            <button onClick={() => removeToast(t.id)} className="ml-2 opacity-70 hover:opacity-100">
+              <X className="w-3 h-3" />
+            </button>
           </div>
         ))}
       </div>

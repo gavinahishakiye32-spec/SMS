@@ -23,22 +23,23 @@ const getMarks = asyncHandler(async (req, res) => {
   }
   if (req.user.role === 'teacher') {
     const teacher = await Teacher.findOne({ userId: req.user._id }).populate({ path: 'subjectIds', select: 'classIds' });
-    if (teacher) {
-      const classIdSet = new Set();
-      for (const subject of teacher.subjectIds) {
-        for (const cid of subject.classIds) classIdSet.add(cid.toString());
+    if (!teacher) {
+      return res.status(403).json({ success: false, message: 'Teacher profile not found' });
+    }
+    const classIdSet = new Set();
+    for (const subject of teacher.subjectIds) {
+      for (const cid of subject.classIds) classIdSet.add(cid.toString());
+    }
+    const allowedClassIds = [...classIdSet];
+    const specificClassId = typeof query.classId === 'string' ? query.classId : null;
+    if (specificClassId) {
+      if (!allowedClassIds.includes(specificClassId)) {
+        return res.status(403).json({ success: false, message: 'You do not have permission to view marks for this class' });
       }
-      const allowedClassIds = [...classIdSet];
-      const specificClassId = typeof query.classId === 'string' ? query.classId : null;
-      if (specificClassId) {
-        if (!allowedClassIds.includes(specificClassId)) {
-          return res.status(403).json({ success: false, message: 'You do not have permission to view marks for this class' });
-        }
-      } else if (allowedClassIds.length > 0) {
-        query.classId = { $in: allowedClassIds };
-      } else {
-        query.classId = { $in: [] };
-      }
+    } else if (allowedClassIds.length > 0) {
+      query.classId = { $in: allowedClassIds };
+    } else {
+      query.classId = { $in: [] };
     }
   }
   const total = await Mark.countDocuments(query);
@@ -250,17 +251,18 @@ const getStudentMarks = asyncHandler(async (req, res) => {
   }
   if (req.user.role === 'teacher') {
     const teacher = await Teacher.findOne({ userId: req.user._id }).populate({ path: 'subjectIds', select: 'classIds' });
-    if (teacher) {
-      const classIdSet = new Set();
-      for (const subject of teacher.subjectIds) {
-        for (const cid of subject.classIds) classIdSet.add(cid.toString());
-      }
-      if (!classIdSet.has(studentExists.classId?.toString())) {
-        return res.status(403).json({
-          success: false,
-          message: 'You do not have permission to view these marks',
-        });
-      }
+    if (!teacher) {
+      return res.status(403).json({ success: false, message: 'Teacher profile not found' });
+    }
+    const classIdSet = new Set();
+    for (const subject of teacher.subjectIds) {
+      for (const cid of subject.classIds) classIdSet.add(cid.toString());
+    }
+    if (!classIdSet.has(studentExists.classId?.toString())) {
+      return res.status(403).json({
+        success: false,
+        message: 'You do not have permission to view these marks',
+      });
     }
   }
   const { termId } = req.query;
@@ -278,18 +280,19 @@ const getStudentSubjectMarks = asyncHandler(async (req, res) => {
   const { studentId, subjectId } = req.params;
   if (req.user.role === 'teacher') {
     const teacher = await Teacher.findOne({ userId: req.user._id }).populate({ path: 'subjectIds', select: 'classIds' });
-    if (teacher) {
-      const classIdSet = new Set();
-      for (const subject of teacher.subjectIds) {
-        for (const cid of subject.classIds) classIdSet.add(cid.toString());
-      }
-      const student = await Student.findById(studentId).select('classId').lean();
-      if (!student || !classIdSet.has(student.classId?.toString())) {
-        return res.status(403).json({
-          success: false,
-          message: 'You do not have permission to view these marks',
-        });
-      }
+    if (!teacher) {
+      return res.status(403).json({ success: false, message: 'Teacher profile not found' });
+    }
+    const classIdSet = new Set();
+    for (const subject of teacher.subjectIds) {
+      for (const cid of subject.classIds) classIdSet.add(cid.toString());
+    }
+    const student = await Student.findById(studentId).select('classId').lean();
+    if (!student || !classIdSet.has(student.classId?.toString())) {
+      return res.status(403).json({
+        success: false,
+        message: 'You do not have permission to view these marks',
+      });
     }
   }
   const marks = await Mark.find({ studentId, subjectId })
@@ -302,17 +305,18 @@ const getClassMarks = asyncHandler(async (req, res) => {
   const { classId } = req.params;
   if (req.user.role === 'teacher') {
     const teacher = await Teacher.findOne({ userId: req.user._id }).populate({ path: 'subjectIds', select: 'classIds' });
-    if (teacher) {
-      const classIdSet = new Set();
-      for (const subject of teacher.subjectIds) {
-        for (const cid of subject.classIds) classIdSet.add(cid.toString());
-      }
-      if (!classIdSet.has(classId.toString())) {
-        return res.status(403).json({
-          success: false,
-          message: 'You do not have permission to view marks for this class',
-        });
-      }
+    if (!teacher) {
+      return res.status(403).json({ success: false, message: 'Teacher profile not found' });
+    }
+    const classIdSet = new Set();
+    for (const subject of teacher.subjectIds) {
+      for (const cid of subject.classIds) classIdSet.add(cid.toString());
+    }
+    if (!classIdSet.has(classId.toString())) {
+      return res.status(403).json({
+        success: false,
+        message: 'You do not have permission to view marks for this class',
+      });
     }
   }
   const { termId } = req.query;
@@ -346,20 +350,6 @@ async function generateReportForStudent(studentId, termId, academicYearId) {
   const grade = calculateGrade(overallAverage, level);
   const remarks = ['A', 'B', 'C', 'D'].includes(grade) ? 'Pass' : 'Fail';
 
-  const classRank = await Report.countDocuments({
-    classId: student.classId, termId, academicYearId,
-    overallAverage: { $gt: overallAverage },
-  }) + 1;
-
-  const totalStudentsInClass = await Student.countDocuments({ classId: student.classId, academicYearId });
-
-  const schoolRank = await Report.countDocuments({
-    termId, academicYearId,
-    overallAverage: { $gt: overallAverage },
-  }) + 1;
-
-  const totalStudentsInSchool = await Report.countDocuments({ termId, academicYearId });
-
   await Report.findOneAndUpdate(
     { studentId, termId, academicYearId },
     {
@@ -376,13 +366,43 @@ async function generateReportForStudent(studentId, termId, academicYearId) {
       overallAverage,
       grade,
       remarks,
-      classRank,
-      totalStudentsInClass,
-      schoolRank,
-      totalStudentsInSchool,
     },
     { upsert: true }
   );
+
+  await recalculateRanks(termId, academicYearId);
+}
+
+async function recalculateRanks(termId, academicYearId) {
+  const allReports = await Report.find({ termId, academicYearId })
+    .sort({ overallAverage: -1 })
+    .lean();
+
+  const classGroups = {};
+  const totalInSchool = allReports.length;
+
+  for (const r of allReports) {
+    const ck = r.classId.toString();
+    if (!classGroups[ck]) classGroups[ck] = [];
+    classGroups[ck].push(r);
+  }
+
+  const bulk = allReports.map((r) => {
+    const ck = r.classId.toString();
+    const classRank = classGroups[ck].findIndex((cr) => cr._id.toString() === r._id.toString()) + 1;
+    const totalInClass = classGroups[ck].length;
+    const schoolRank = allReports.findIndex((sr) => sr._id.toString() === r._id.toString()) + 1;
+    return {
+      updateOne: {
+        filter: { _id: r._id },
+        update: { $set: { classRank, totalStudentsInClass: totalInClass, schoolRank, totalStudentsInSchool: totalInSchool } },
+      },
+    };
+  });
+
+  if (bulk.length > 0) {
+    await Report.bulkWrite(bulk);
+  }
 }
 
 module.exports = {
@@ -394,4 +414,5 @@ module.exports = {
   getStudentMarks,
   getStudentSubjectMarks,
   getClassMarks,
+  recalculateRanks,
 };

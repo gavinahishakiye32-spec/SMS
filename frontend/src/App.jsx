@@ -69,7 +69,7 @@ export default function App() {
         <Route path="marks" element={<ProtectedRoute roles={['superadmin', 'schooladmin']}><MarksPage /></ProtectedRoute>} />
         <Route path="reports" element={<ProtectedRoute roles={['superadmin', 'schooladmin']}><ReportsPage /></ProtectedRoute>} />
         <Route path="analytics" element={<ProtectedRoute roles={['superadmin', 'schooladmin']}><AnalyticsPage /></ProtectedRoute>} />
-        <Route path="suggestions" element={<ProtectedRoute roles={['superadmin', 'schooladmin']}><SuggestionsPage /></ProtectedRoute>} />
+        <Route path="suggestions" element={<ProtectedRoute roles={['superadmin', 'schooladmin', 'teacher']}><SuggestionsPage /></ProtectedRoute>} />
         <Route path="settings" element={<ProtectedRoute roles={['superadmin', 'schooladmin']}><SchoolSettingsPage /></ProtectedRoute>} />
       </Route>
       <Route path="/teacher" element={<ProtectedRoute roles={['teacher']}><MainLayout /></ProtectedRoute>}>

@@ -24,7 +24,7 @@ export default function StudentsPage() {
 
   const { data, isLoading } = useQuery({
     queryKey: ['students', page, search, level, classFilter, sectionFilter, genderFilter, academicYearFilter],
-    queryFn: () => API.get(`/students?page=${page}&limit=10&search=${search}&level=${level}${classFilter ? `&classId=${classFilter}` : ''}${sectionFilter ? `&sectionId=${sectionFilter}` : ''}${genderFilter ? `&gender=${genderFilter}` : ''}${academicYearFilter ? `&academicYearId=${academicYearFilter}` : ''}`).then((r) => r.data),
+    queryFn: () => API.get(`/students?page=${page}&limit=10&search=${encodeURIComponent(search)}&level=${level}${classFilter ? `&classId=${classFilter}` : ''}${sectionFilter ? `&sectionId=${sectionFilter}` : ''}${genderFilter ? `&gender=${genderFilter}` : ''}${academicYearFilter ? `&academicYearId=${academicYearFilter}` : ''}`).then((r) => r.data),
   });
 
   const { data: classes } = useQuery({
@@ -223,7 +223,7 @@ export default function StudentsPage() {
                   {user?.role !== 'teacher' && (
                     <td className="p-3 flex gap-2">
                       <button onClick={() => handleEdit(s)} className="text-blue-600 hover:underline text-xs">Edit</button>
-                      <button onClick={() => { if (s.userId) resetPasswordMutation.mutate({ userId: s.userId, name: `${s.firstName} ${s.lastName}` }); else addToast('No linked user account', 'error'); }} className="text-orange-600 hover:underline text-xs">Reset Pwd</button>
+                      <button onClick={() => { if (s.userId) resetPasswordMutation.mutate({ userId: s.userId?._id || s.userId, name: `${s.firstName} ${s.lastName}` }); else addToast('No linked user account', 'error'); }} className="text-orange-600 hover:underline text-xs">Reset Pwd</button>
                       <button onClick={() => { if (confirm('Delete this student?')) deleteMutation.mutate(s._id); }} className="text-red-600 hover:underline text-xs">Delete</button>
                     </td>
                   )}

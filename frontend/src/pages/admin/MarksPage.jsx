@@ -12,7 +12,12 @@ export default function MarksPage() {
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ['marks', page, classFilter, subjectFilter, termFilter, academicYearFilter],
     queryFn: async () => {
-      const response = await API.get(`/marks?page=${page}&limit=10${classFilter ? `&classId=${classFilter}` : ''}${subjectFilter ? `&subjectId=${subjectFilter}` : ''}${termFilter ? `&termId=${termFilter}` : ''}${academicYearFilter ? `&academicYearId=${academicYearFilter}` : ''}`);
+      const params = new URLSearchParams({ page, limit: 10 });
+      if (classFilter) params.set('classId', classFilter);
+      if (subjectFilter) params.set('subjectId', subjectFilter);
+      if (termFilter) params.set('termId', termFilter);
+      if (academicYearFilter) params.set('academicYearId', academicYearFilter);
+      const response = await API.get(`/marks?${params}`);
       return response.data;
     },
   });

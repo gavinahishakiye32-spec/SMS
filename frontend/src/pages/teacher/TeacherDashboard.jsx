@@ -6,9 +6,9 @@ export default function TeacherDashboard() {
   const { user } = useAuth();
 
   const { data: teacher } = useQuery({
-    queryKey: ['teacher-profile', user?.email],
-    queryFn: () => API.get(`/teachers?search=${user.email}&limit=1`).then((r) => r.data.data[0]),
-    enabled: !!user?.email,
+    queryKey: ['teacher-profile', user?._id],
+    queryFn: () => API.get(`/teachers?userId=${user._id}&limit=1`).then((r) => r.data.data[0]),
+    enabled: !!user?._id,
   });
 
   const { data: subjects } = useQuery({

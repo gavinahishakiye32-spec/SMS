@@ -69,17 +69,18 @@ const getClassAnalytics = asyncHandler(async (req, res) => {
   const { classId } = req.params;
   if (req.user.role === 'teacher') {
     const teacher = await Teacher.findOne({ userId: req.user._id }).populate({ path: 'subjectIds', select: 'classIds' });
-    if (teacher) {
-      const classIdSet = new Set();
-      for (const subject of teacher.subjectIds) {
-        for (const cid of subject.classIds) classIdSet.add(cid.toString());
-      }
-      if (!classIdSet.has(classId.toString())) {
-        return res.status(403).json({
-          success: false,
-          message: 'You do not have permission to view analytics for this class',
-        });
-      }
+    if (!teacher) {
+      return res.status(403).json({ success: false, message: 'Teacher profile not found' });
+    }
+    const classIdSet = new Set();
+    for (const subject of teacher.subjectIds) {
+      for (const cid of subject.classIds) classIdSet.add(cid.toString());
+    }
+    if (!classIdSet.has(classId.toString())) {
+      return res.status(403).json({
+        success: false,
+        message: 'You do not have permission to view analytics for this class',
+      });
     }
   }
   const { termId, academicYearId } = req.query;
