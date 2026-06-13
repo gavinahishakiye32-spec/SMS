@@ -23,7 +23,6 @@ export default function SubjectsPage() {
     queryFn: () => API.get('/teachers?limit=100').then((r) => r.data.data),
   });
 
-  const editingSubject = editing ? data?.data?.find((s) => s._id === editing) : null;
   const assigningSubject = showAssign ? data?.data?.find((s) => s._id === showAssign) : null;
 
   const { data: classes } = useQuery({
@@ -33,7 +32,13 @@ export default function SubjectsPage() {
 
   const deleteMutation = useMutation({
     mutationFn: (id) => API.delete(`/subjects/${id}`),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['subjects'] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['subjects'] });
+      queryClient.invalidateQueries({ queryKey: ['teachers'] });
+      queryClient.invalidateQueries({ queryKey: ['teachers-all'] });
+      queryClient.invalidateQueries({ queryKey: ['classes-list'] });
+      queryClient.invalidateQueries({ queryKey: ['classes-all'] });
+    },
   });
 
   const handleSubmit = async (e) => {
@@ -50,6 +55,10 @@ export default function SubjectsPage() {
       setEditing(null);
       setForm({ name: '', level: 'O-Level', classIds: [] });
       queryClient.invalidateQueries({ queryKey: ['subjects'] });
+      queryClient.invalidateQueries({ queryKey: ['teachers'] });
+      queryClient.invalidateQueries({ queryKey: ['teachers-all'] });
+      queryClient.invalidateQueries({ queryKey: ['classes-list'] });
+      queryClient.invalidateQueries({ queryKey: ['classes-all'] });
     } catch (err) { addToast(err.response?.data?.message || 'Error', 'error'); }
   };
 
@@ -69,6 +78,10 @@ export default function SubjectsPage() {
       setAssignTeacherId('');
       addToast('Teacher assigned successfully', 'success');
       queryClient.invalidateQueries({ queryKey: ['subjects'] });
+      queryClient.invalidateQueries({ queryKey: ['teachers'] });
+      queryClient.invalidateQueries({ queryKey: ['teachers-all'] });
+      queryClient.invalidateQueries({ queryKey: ['classes-list'] });
+      queryClient.invalidateQueries({ queryKey: ['classes-all'] });
     } catch (err) { addToast(err.response?.data?.message || 'Error', 'error'); }
   };
 
@@ -122,11 +135,11 @@ export default function SubjectsPage() {
           <table className="w-full text-sm">
             <thead className="bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300">
               <tr>
-                <th className="text-left p-3">Name</th>
-                <th className="text-left p-3">Level</th>
-                <th className="text-left p-3">Classes</th>
-                <th className="text-left p-3">Teachers</th>
-                <th className="text-left p-3">Actions</th>
+                <th scope="col" className="text-left p-3">Name</th>
+                <th scope="col" className="text-left p-3">Level</th>
+                <th scope="col" className="text-left p-3">Classes</th>
+                <th scope="col" className="text-left p-3">Teachers</th>
+                <th scope="col" className="text-left p-3">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
@@ -134,9 +147,9 @@ export default function SubjectsPage() {
                 <tr key={s._id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
                   <td className="p-3 font-medium text-gray-900 dark:text-white">{s.name}</td>
                   <td className="p-3 text-gray-700 dark:text-gray-300">{s.level}</td>
-                  <td className="p-3 text-gray-700 dark:text-gray-300">{s.classIds?.map((c) => c.name).join(', ') || '-'}</td>
-                  <td className="p-3 text-gray-700 dark:text-gray-300">{s.teacherIds?.map((t) => `${t.firstName} ${t.lastName}`).join(', ') || '-'}</td>
-                  <td className="p-3 flex gap-2">
+                  <td className="p-3 text-gray-700 dark:text-gray-300">{(s.classIds || []).map((c) => c.name).join(', ') || '-'}</td>
+                  <td className="p-3 text-gray-700 dark:text-gray-300">{(s.teacherIds || []).map((t) => `${t.firstName} ${t.lastName}`).join(', ') || '-'}</td>
+                  <td className="p-3 flex flex-wrap gap-2">
                     <button onClick={() => { setForm({ name: s.name, level: s.level, classIds: s.classIds?.map((c) => c._id) || [] }); setEditing(s._id); setShowForm(true); }} className="text-blue-600 hover:underline text-xs">Edit</button>
                     <button onClick={() => setShowAssign(s._id)} className="text-green-600 hover:underline text-xs">Assign</button>
                     <button onClick={() => { if (confirm('Delete?')) deleteMutation.mutate(s._id); }} className="text-red-600 hover:underline text-xs">Delete</button>

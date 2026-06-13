@@ -23,7 +23,10 @@ export default function ClassesPage() {
 
   const deleteMutation = useMutation({
     mutationFn: (id) => API.delete(`/classes/${id}`),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['classes-list'] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['classes-list'] });
+      queryClient.invalidateQueries({ queryKey: ['classes-all'] });
+    },
   });
 
   const handleSubmit = async (e) => {
@@ -40,6 +43,7 @@ export default function ClassesPage() {
       setEditing(null);
       setForm({ name: 'S1', level: 'O-Level', academicYearId: '' });
       queryClient.invalidateQueries({ queryKey: ['classes-list'] });
+      queryClient.invalidateQueries({ queryKey: ['classes-all'] });
     } catch (err) { addToast(err.response?.data?.message || 'Error', 'error'); }
   };
 

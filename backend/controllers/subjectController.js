@@ -69,10 +69,31 @@ const updateSubject = asyncHandler(async (req, res) => {
       message: 'Subject not found',
     });
   }
-  if (req.body.name) subject.name = req.body.name;
-  if (req.body.level) subject.level = req.body.level;
+  const oldTeacherIds = subject.teacherIds.map(id => id.toString());
+  if (req.body.name !== undefined) subject.name = req.body.name;
+  if (req.body.level !== undefined) subject.level = req.body.level;
   if (req.body.classIds !== undefined) subject.classIds = req.body.classIds;
+  if (req.body.teacherIds !== undefined) subject.teacherIds = req.body.teacherIds;
   const updated = await subject.save();
+
+  if (req.body.teacherIds !== undefined) {
+    const newTeacherIds = req.body.teacherIds.map(id => id.toString());
+    const removed = oldTeacherIds.filter(id => !newTeacherIds.includes(id));
+    const added = newTeacherIds.filter(id => !oldTeacherIds.includes(id));
+    if (removed.length) {
+      await Teacher.updateMany(
+        { _id: { $in: removed } },
+        { $pull: { subjectIds: subject._id } }
+      );
+    }
+    if (added.length) {
+      await Teacher.updateMany(
+        { _id: { $in: added } },
+        { $addToSet: { subjectIds: subject._id } }
+      );
+    }
+  }
+
   return res.json({
     success: true,
     message: 'Subject updated successfully',
@@ -113,11 +134,11 @@ const assignTeacher = asyncHandler(async (req, res) => {
       message: 'Teacher not found',
     });
   }
-  if (!subject.teacherIds.includes(teacherId)) {
+  if (!subject.teacherIds.some(id => id.toString() === teacherId)) {
     subject.teacherIds.push(teacherId);
     await subject.save();
   }
-  if (!teacher.subjectIds.includes(subject._id)) {
+  if (!teacher.subjectIds.some(id => id.toString() === subject._id.toString())) {
     teacher.subjectIds.push(subject._id);
     await teacher.save();
   }

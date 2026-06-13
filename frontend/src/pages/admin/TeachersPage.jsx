@@ -26,7 +26,11 @@ export default function TeachersPage() {
 
   const deleteMutation = useMutation({
     mutationFn: (id) => API.delete(`/teachers/${id}`),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['teachers'] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['teachers'] });
+      queryClient.invalidateQueries({ queryKey: ['subjects'] });
+      queryClient.invalidateQueries({ queryKey: ['subjects-all'] });
+    },
   });
 
   const resetPasswordMutation = useMutation({
@@ -53,6 +57,8 @@ export default function TeachersPage() {
       setEditing(null);
       setForm({ firstName: '', lastName: '', gender: 'Male', NIN: '', phoneNumber: '', email: '', level: '', subjectIds: [] });
       queryClient.invalidateQueries({ queryKey: ['teachers'] });
+      queryClient.invalidateQueries({ queryKey: ['subjects'] });
+      queryClient.invalidateQueries({ queryKey: ['subjects-all'] });
     } catch (err) {
       addToast(err.response?.data?.message || 'Error saving teacher', 'error');
     }
@@ -126,14 +132,14 @@ export default function TeachersPage() {
           <table className="w-full text-sm">
             <thead className="bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300">
               <tr>
-                <th className="text-left p-3">Name</th>
-                <th className="text-left p-3">Level</th>
-                <th className="text-left p-3">Gender</th>
-                <th className="text-left p-3">NIN</th>
-                <th className="text-left p-3">Email</th>
-                <th className="text-left p-3">Phone</th>
-                <th className="text-left p-3">Subjects</th>
-                <th className="text-left p-3">Actions</th>
+                <th scope="col" className="text-left p-3">Name</th>
+                <th scope="col" className="text-left p-3">Level</th>
+                <th scope="col" className="text-left p-3">Gender</th>
+                <th scope="col" className="text-left p-3">NIN</th>
+                <th scope="col" className="text-left p-3">Email</th>
+                <th scope="col" className="text-left p-3">Phone</th>
+                <th scope="col" className="text-left p-3">Subjects</th>
+                <th scope="col" className="text-left p-3">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
@@ -150,9 +156,9 @@ export default function TeachersPage() {
                   <td className="p-3 text-gray-700 dark:text-gray-300">{t.email}</td>
                   <td className="p-3 text-gray-700 dark:text-gray-300">{t.phoneNumber || '-'}</td>
                   <td className="p-3 text-gray-700 dark:text-gray-300">
-                    {t.subjectIds?.map((s) => `${s.name} (${s.classIds?.map((c) => c.name).join(', ') || 'no classes'})`).join(', ') || '-'}
+                    {(t.subjectIds || []).map((s) => `${s.name} (${(s.classIds || []).map((c) => c.name).join(', ') || 'no classes'})`).join(', ') || '-'}
                   </td>
-                  <td className="p-3 flex gap-2">
+                  <td className="p-3 flex flex-wrap gap-2">
                     <button onClick={() => { setForm({ firstName: t.firstName, lastName: t.lastName, gender: t.gender, NIN: t.NIN || '', phoneNumber: t.phoneNumber || '', email: t.email, level: t.level || '', subjectIds: t.subjectIds?.map((s) => s._id) || [] }); setEditing(t._id); setShowForm(true); }} className="text-blue-600 hover:underline text-xs">Edit</button>
                     <button onClick={() => { if (t.userId?._id) resetPasswordMutation.mutate({ userId: t.userId._id, name: `${t.firstName} ${t.lastName}` }); else addToast('No linked user account', 'error'); }} className="text-orange-600 hover:underline text-xs">Reset Pwd</button>
                     <button onClick={() => { if (confirm('Delete?')) deleteMutation.mutate(t._id); }} className="text-red-600 hover:underline text-xs">Delete</button>

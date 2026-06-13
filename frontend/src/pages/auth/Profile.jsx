@@ -30,7 +30,7 @@ export default function Profile() {
       <div className="bg-white dark:bg-gray-900 rounded-xl shadow p-6 space-y-4">
         <div>
           <p className="text-sm text-gray-500 dark:text-gray-400">Role</p>
-          <p className="font-medium text-gray-900 dark:text-white capitalize">{user?.role?.replace('admin', ' Admin')}</p>
+          <p className="font-medium text-gray-900 dark:text-white capitalize">{({ superadmin: 'Super Admin', schooladmin: 'School Admin', teacher: 'Teacher', student: 'Student' })[user?.role] || user?.role}</p>
         </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>

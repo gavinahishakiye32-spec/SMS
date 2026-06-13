@@ -80,8 +80,8 @@ export default function StudentDashboard() {
                 </tr>
               </thead>
               <tbody>
-                {marks.map((m, i) => (
-                  <tr key={i} className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                {marks.map((m) => (
+                  <tr key={m._id} className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50">
                     <td className="py-3 px-2 font-medium text-gray-900 dark:text-white">{m.subjectId?.name || 'N/A'}</td>
                     <td className="text-center py-3 px-2 text-gray-700 dark:text-gray-300">{m.midtermMarks != null ? m.midtermMarks : '-'}</td>
                     <td className="text-center py-3 px-2 text-gray-700 dark:text-gray-300">{m.endTermMarks != null ? m.endTermMarks : '-'}</td>

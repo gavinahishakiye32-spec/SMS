@@ -1,17 +1,19 @@
-import { createContext, useContext, useState, useCallback } from 'react';
+import { createContext, useContext, useState, useCallback, useRef } from 'react';
 import { Check, X, Info } from 'lucide-react';
 
 const ToastContext = createContext();
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useToast() {
   return useContext(ToastContext);
 }
 
 export function ToastProvider({ children }) {
   const [toasts, setToasts] = useState([]);
+  const toastIdRef = useRef(0);
 
   const addToast = useCallback((message, type = 'success') => {
-    const id = Date.now();
+    const id = ++toastIdRef.current;
     setToasts((prev) => [...prev, { id, message, type }]);
     setTimeout(() => {
       setToasts((prev) => prev.filter((t) => t.id !== id));
@@ -25,7 +27,7 @@ export function ToastProvider({ children }) {
   return (
     <ToastContext.Provider value={{ addToast }}>
       {children}
-      <div className="fixed bottom-6 right-6 z-[100] flex flex-col gap-2">
+      <div role="alert" aria-live="polite" className="fixed bottom-6 right-6 z-[100] flex flex-col gap-2">
         {toasts.map((t) => (
           <div
             key={t.id}

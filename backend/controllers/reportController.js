@@ -378,6 +378,11 @@ const updateReportRemark = asyncHandler(async (req, res) => {
         message: 'You do not have permission to update remarks for this report',
       });
     }
+  } else if (!['superadmin', 'schooladmin'].includes(req.user.role)) {
+    return res.status(403).json({
+      success: false,
+      message: 'You do not have permission to update report remarks',
+    });
   }
   if (teacherRemark !== undefined) report.teacherRemark = teacherRemark || '';
   if (req.body.headTeacherSignature !== undefined) report.headTeacherSignature = req.body.headTeacherSignature || '';

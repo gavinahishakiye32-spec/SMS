@@ -28,12 +28,15 @@ markSchema.pre('save', async function (next) {
       if (classDoc) {
         this.grade = calculateGrade(this.subjectAverage, classDoc.level);
         this.gradePoints = calculateGradePoints(this.subjectAverage, classDoc.level);
+        return next();
       }
     }
+    this.grade = calculateGrade(this.subjectAverage, 'O-Level');
+    this.gradePoints = calculateGradePoints(this.subjectAverage, 'O-Level');
   } catch (error) {
-    console.error('Error in Mark pre-save:', error);
-    this.grade = '';
-    this.gradePoints = 0;
+    console.error('Error in Mark pre-save hook:', error);
+    this.grade = calculateGrade(this.subjectAverage, 'O-Level');
+    this.gradePoints = calculateGradePoints(this.subjectAverage, 'O-Level');
   }
   next();
 });

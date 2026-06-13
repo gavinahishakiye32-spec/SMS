@@ -110,12 +110,12 @@ export default function ParentsPage() {
           <table className="w-full text-sm">
             <thead className="bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300">
               <tr>
-                <th className="text-left p-3">Name</th>
-                <th className="text-left p-3">NIN</th>
-                <th className="text-left p-3">Phone</th>
-                <th className="text-left p-3">Email</th>
-                <th className="text-left p-3">Students</th>
-                <th className="text-left p-3">Actions</th>
+                <th scope="col" className="text-left p-3">Name</th>
+                <th scope="col" className="text-left p-3">NIN</th>
+                <th scope="col" className="text-left p-3">Phone</th>
+                <th scope="col" className="text-left p-3">Email</th>
+                <th scope="col" className="text-left p-3">Students</th>
+                <th scope="col" className="text-left p-3">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-gray-700">

@@ -73,9 +73,9 @@ const updateClass = asyncHandler(async (req, res) => {
       message: 'Class not found',
     });
   }
-  if (req.body.name) classItem.name = req.body.name;
-  if (req.body.level) classItem.level = req.body.level;
-  if (req.body.academicYearId) classItem.academicYearId = req.body.academicYearId;
+  if (req.body.name !== undefined) classItem.name = req.body.name;
+  if (req.body.level !== undefined) classItem.level = req.body.level;
+  if (req.body.academicYearId !== undefined) classItem.academicYearId = req.body.academicYearId;
   const updated = await classItem.save();
   return res.json({
     success: true,
@@ -125,7 +125,10 @@ const getClassStudents = asyncHandler(async (req, res) => {
       });
     }
   }
-  const students = await Student.find({ classId: req.params.id })
+  const { academicYearId } = req.query;
+  let studentQuery = { classId: req.params.id };
+  if (academicYearId) studentQuery.academicYearId = academicYearId;
+  const students = await Student.find(studentQuery)
     .populate('sectionId', 'name')
     .populate('academicYearId', 'year')
     .limit(200)
@@ -150,10 +153,11 @@ const getClassPerformance = asyncHandler(async (req, res) => {
       });
     }
   }
-  const { termId } = req.query;
+  const { termId, academicYearId } = req.query;
   const classId = req.params.id;
   let match = { classId };
   if (termId) match.termId = termId;
+  if (academicYearId) match.academicYearId = academicYearId;
   const reports = await Report.find(match)
     .populate('studentId', 'firstName lastName studentCode')
     .sort({ overallAverage: -1 })
@@ -167,6 +171,7 @@ const getClassPerformance = asyncHandler(async (req, res) => {
 
   let markMatch = { classId };
   if (termId) markMatch.termId = termId;
+  if (academicYearId) markMatch.academicYearId = academicYearId;
   const subjectAverages = await Mark.aggregate([
     { $match: markMatch },
     { $group: { _id: '$subjectId', avg: { $avg: '$subjectAverage' } } },

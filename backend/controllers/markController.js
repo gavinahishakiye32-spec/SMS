@@ -17,9 +17,11 @@ const getMarks = asyncHandler(async (req, res) => {
   if (req.query.subjectId) query.subjectId = req.query.subjectId;
   if (req.query.termId) query.termId = req.query.termId;
   if (req.query.academicYearId) query.academicYearId = req.query.academicYearId;
+  let levelFilteredClassIds = null;
   if (req.query.level) {
     const classes = await Class.find({ level: req.query.level }).select('_id');
-    if (!req.query.classId) query.classId = { $in: classes.map(c => c._id) };
+    levelFilteredClassIds = classes.map(c => c._id.toString());
+    if (!req.query.classId) query.classId = { $in: levelFilteredClassIds };
   }
   if (req.user.role === 'teacher') {
     const teacher = await Teacher.findOne({ userId: req.user._id }).populate({ path: 'subjectIds', select: 'classIds' });
@@ -36,10 +38,16 @@ const getMarks = asyncHandler(async (req, res) => {
       if (!allowedClassIds.includes(specificClassId)) {
         return res.status(403).json({ success: false, message: 'You do not have permission to view marks for this class' });
       }
-    } else if (allowedClassIds.length > 0) {
-      query.classId = { $in: allowedClassIds };
     } else {
-      query.classId = { $in: [] };
+      let classFilter = allowedClassIds;
+      if (levelFilteredClassIds) {
+        classFilter = allowedClassIds.filter(id => levelFilteredClassIds.includes(id));
+      }
+      if (classFilter.length > 0) {
+        query.classId = { $in: classFilter };
+      } else {
+        query.classId = { $in: [] };
+      }
     }
   }
   const total = await Mark.countDocuments(query);
@@ -68,6 +76,12 @@ const addMarks = asyncHandler(async (req, res) => {
       message: 'Please provide required fields: studentId, subjectId, classId, termId, academicYearId',
     });
   }
+  if (midtermMarks == null && endTermMarks == null) {
+    return res.status(400).json({
+      success: false,
+      message: 'Please provide at least one of midtermMarks or endTermMarks',
+    });
+  }
   if ((midtermMarks != null && (midtermMarks < 0 || midtermMarks > 100)) ||
       (endTermMarks != null && (endTermMarks < 0 || endTermMarks > 100))) {
     return res.status(400).json({
@@ -84,7 +98,7 @@ const addMarks = asyncHandler(async (req, res) => {
         message: 'Teacher profile not found',
       });
     }
-    if (!teacher.subjectIds.includes(subjectId)) {
+    if (!teacher.subjectIds.some(sid => sid.toString() === subjectId)) {
       return res.status(403).json({
         success: false,
         message: 'You do not have permission to add marks for this subject',
@@ -177,7 +191,7 @@ const updateMarks = asyncHandler(async (req, res) => {
   }
   if (req.user.role === 'teacher') {
     const teacher = await Teacher.findOne({ userId: req.user._id });
-    if (!teacher || !teacher.subjectIds.includes(mark.subjectId.toString())) {
+    if (!teacher || !teacher.subjectIds.some(sid => sid.toString() === mark.subjectId.toString())) {
       return res.status(403).json({
         success: false,
         message: 'You do not have permission to update marks for this subject',
@@ -348,7 +362,8 @@ async function generateReportForStudent(studentId, termId, academicYearId) {
   const combinedTotal = subjectAverages.reduce((sum, s) => sum + s, 0);
   const overallAverage = combinedTotal / marks.length;
   const grade = calculateGrade(overallAverage, level);
-  const remarks = ['A', 'B', 'C', 'D'].includes(grade) ? 'Pass' : 'Fail';
+  const passGrades = level === 'A-Level' ? ['A', 'B', 'C', 'D'] : ['A', 'B', 'C', 'D', 'E'];
+  const remarks = passGrades.includes(grade) ? 'Pass' : 'Fail';
 
   await Report.findOneAndUpdate(
     { studentId, termId, academicYearId },

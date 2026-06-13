@@ -72,7 +72,14 @@ const createTeacher = asyncHandler(async (req, res) => {
       subjectIds: subjectIds || [],
       profilePhoto: req.file ? req.file.path : '',
     });
-    
+
+    if (subjectIds?.length) {
+      await Subject.updateMany(
+        { _id: { $in: subjectIds } },
+        { $addToSet: { teacherIds: teacher._id } }
+      );
+    }
+
     const teacherData = teacher.toObject();
     teacherData.defaultPassword = 'teacher123';
     return res.status(201).json({
@@ -101,7 +108,7 @@ const getTeacherById = asyncHandler(async (req, res) => {
       message: 'Teacher not found',
     });
   }
-  if (req.user.role === 'teacher' && teacher.userId?.toString() !== req.user._id.toString()) {
+  if (req.user.role === 'teacher' && (teacher.userId?._id || teacher.userId).toString() !== req.user._id.toString()) {
     return res.status(403).json({
       success: false,
       message: 'You do not have permission to view this teacher profile',
@@ -118,12 +125,31 @@ const updateTeacher = asyncHandler(async (req, res) => {
       message: 'Teacher not found',
     });
   }
+  const oldSubjectIds = teacher.subjectIds.map(id => id.toString());
   const fields = ['firstName', 'lastName', 'gender', 'NIN', 'phoneNumber', 'email', 'level', 'subjectIds'];
   fields.forEach((f) => {
     if (req.body[f] !== undefined) teacher[f] = req.body[f];
   });
   if (req.file) teacher.profilePhoto = req.file.path;
   const updated = await teacher.save();
+
+  const newSubjectIds = (req.body.subjectIds || []).map(id => id.toString());
+  const removed = oldSubjectIds.filter(id => !newSubjectIds.includes(id));
+  const added = newSubjectIds.filter(id => !oldSubjectIds.includes(id));
+
+  if (removed.length) {
+    await Subject.updateMany(
+      { _id: { $in: removed } },
+      { $pull: { teacherIds: teacher._id } }
+    );
+  }
+  if (added.length) {
+    await Subject.updateMany(
+      { _id: { $in: added } },
+      { $addToSet: { teacherIds: teacher._id } }
+    );
+  }
+
   return res.json({
     success: true,
     message: 'Teacher updated successfully',

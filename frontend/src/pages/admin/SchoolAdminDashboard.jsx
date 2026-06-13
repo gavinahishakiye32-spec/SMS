@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import API from '../../services/api';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+
 
 export default function SchoolAdminDashboard() {
   const { data: analytics } = useQuery({

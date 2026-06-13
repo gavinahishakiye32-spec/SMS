@@ -58,7 +58,10 @@ export default function StudentsPage() {
 
   const deleteMutation = useMutation({
     mutationFn: (id) => API.delete(`/students/${id}`),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['students'] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['students'] });
+      queryClient.invalidateQueries({ queryKey: ['analytics-school'] });
+    },
   });
 
   const handleSubmit = async (e) => {
@@ -77,6 +80,7 @@ export default function StudentsPage() {
       setEditing(null);
       setForm({ firstName: '', lastName: '', gender: 'Male', dateOfBirth: '', NIN: '', address: '', phoneNumber: '', email: '', classId: '', sectionId: '' });
       queryClient.invalidateQueries({ queryKey: ['students'] });
+      queryClient.invalidateQueries({ queryKey: ['analytics-school'] });
     } catch (err) {
       addToast(err.response?.data?.message || 'Error saving student', 'error');
     }
@@ -192,16 +196,16 @@ export default function StudentsPage() {
           <table className="w-full text-sm">
             <thead className="bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300">
               <tr>
-                {user?.role !== 'teacher' && <th className="text-left p-3">Code</th>}
-                <th className="text-left p-3">Name</th>
-                {user?.role !== 'teacher' && <th className="text-left p-3">Gender</th>}
-                {user?.role !== 'teacher' && <th className="text-left p-3">Login Email</th>}
-                {user?.role !== 'teacher' && <th className="text-left p-3">Date of Birth</th>}
-                {user?.role !== 'teacher' && <th className="text-left p-3">NIN</th>}
-                <th className="text-left p-3">Class</th>
-                <th className="text-left p-3">Section</th>
-                {user?.role !== 'teacher' && <th className="text-left p-3">Phone</th>}
-                {user?.role !== 'teacher' && <th className="text-left p-3">Actions</th>}
+                {user?.role !== 'teacher' && <th scope="col" className="text-left p-3">Code</th>}
+                <th scope="col" className="text-left p-3">Name</th>
+                {user?.role !== 'teacher' && <th scope="col" className="text-left p-3">Gender</th>}
+                {user?.role !== 'teacher' && <th scope="col" className="text-left p-3">Login Email</th>}
+                {user?.role !== 'teacher' && <th scope="col" className="text-left p-3">Date of Birth</th>}
+                {user?.role !== 'teacher' && <th scope="col" className="text-left p-3">NIN</th>}
+                <th scope="col" className="text-left p-3">Class</th>
+                <th scope="col" className="text-left p-3">Section</th>
+                {user?.role !== 'teacher' && <th scope="col" className="text-left p-3">Phone</th>}
+                {user?.role !== 'teacher' && <th scope="col" className="text-left p-3">Actions</th>}
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
@@ -221,7 +225,7 @@ export default function StudentsPage() {
                   <td className="p-3 text-gray-700 dark:text-gray-300">{s.sectionId?.name || '-'}</td>
                   {user?.role !== 'teacher' && <td className="p-3 text-gray-700 dark:text-gray-300">{s.phoneNumber || '-'}</td>}
                   {user?.role !== 'teacher' && (
-                    <td className="p-3 flex gap-2">
+                    <td className="p-3 flex flex-wrap gap-2">
                       <button onClick={() => handleEdit(s)} className="text-blue-600 hover:underline text-xs">Edit</button>
                       <button onClick={() => { if (s.userId) resetPasswordMutation.mutate({ userId: s.userId?._id || s.userId, name: `${s.firstName} ${s.lastName}` }); else addToast('No linked user account', 'error'); }} className="text-orange-600 hover:underline text-xs">Reset Pwd</button>
                       <button onClick={() => { if (confirm('Delete this student?')) deleteMutation.mutate(s._id); }} className="text-red-600 hover:underline text-xs">Delete</button>

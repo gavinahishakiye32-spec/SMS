@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import API from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
@@ -22,9 +22,9 @@ export default function SuggestionsPage() {
     queryFn: () => API.get('/suggestions?limit=20').then((r) => r.data),
   });
 
-  const suggestions = data?.data || [];
+  const suggestions = useMemo(() => data?.data || [], [data]);
 
-  const isUnread = (s) => !s.readBy?.includes(user?._id);
+  const isUnread = useCallback((s) => !s.readBy?.includes(user?._id), [user]);
 
   const markReadMutation = useMutation({
     mutationFn: (id) => API.post(`/suggestions/${id}/read`),
@@ -39,7 +39,7 @@ export default function SuggestionsPage() {
     if (unread.length) {
       unread.forEach((s) => markReadMutation.mutate(s._id));
     }
-  }, [suggestions]);
+  }, [suggestions, isUnread, markReadMutation]);
 
   const invalidateAll = () => {
     queryClient.invalidateQueries({ queryKey: ['suggestions'] });

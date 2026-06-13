@@ -412,10 +412,11 @@ const getStudentRanking = asyncHandler(async (req, res) => {
       message: 'You do not have permission to view this ranking',
     });
   }
-  const { termId } = req.query;
+  const { termId, academicYearId } = req.query;
   let match = {};
   if (student.classId) match.classId = student.classId;
   if (termId) match.termId = termId;
+  if (academicYearId) match.academicYearId = academicYearId;
   const reports = await Report.find(match).sort({ overallAverage: -1 });
   const rank = reports.findIndex(
     (r) => r.studentId && r.studentId.toString() === student._id.toString()

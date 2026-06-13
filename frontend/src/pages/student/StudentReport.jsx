@@ -66,7 +66,7 @@ export default function StudentReport() {
           </div>
           <h3 className="font-bold text-lg mb-2 text-gray-900 dark:text-white">Academic Performance</h3>
           <table className="w-full text-sm mb-4 border">
-            <thead><tr className="bg-gray-50 dark:bg-gray-800"><th className="border p-2 text-left text-gray-700 dark:text-gray-300">Subject</th><th className="border p-2 text-gray-700 dark:text-gray-300">Mid-Term/100</th><th className="border p-2 text-gray-700 dark:text-gray-300">End-Term/100</th><th className="border p-2 text-gray-700 dark:text-gray-300">Average</th><th className="border p-2 text-gray-700 dark:text-gray-300">Grade</th></tr></thead>
+            <thead><tr className="bg-gray-50 dark:bg-gray-800"><th scope="col" className="border p-2 text-left text-gray-700 dark:text-gray-300">Subject</th><th scope="col" className="border p-2 text-gray-700 dark:text-gray-300">Mid-Term/100</th><th scope="col" className="border p-2 text-gray-700 dark:text-gray-300">End-Term/100</th><th scope="col" className="border p-2 text-gray-700 dark:text-gray-300">Average</th><th scope="col" className="border p-2 text-gray-700 dark:text-gray-300">Grade</th></tr></thead>
             <tbody>
               {report.marks?.map((m) => (
                 <tr key={m._id}>

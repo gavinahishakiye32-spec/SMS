@@ -9,7 +9,7 @@ export default function MarksPage() {
   const [termFilter, setTermFilter] = useState('');
   const [academicYearFilter, setAcademicYearFilter] = useState('');
 
-  const { data, isLoading, isError, error } = useQuery({
+  const { data, isLoading, isError } = useQuery({
     queryKey: ['marks', page, classFilter, subjectFilter, termFilter, academicYearFilter],
     queryFn: async () => {
       const params = new URLSearchParams({ page, limit: 10 });
@@ -55,7 +55,6 @@ export default function MarksPage() {
   });
 
   const selectedClass = useMemo(() => classes?.find((c) => c._id === classFilter), [classes, classFilter]);
-  const selectedSubject = useMemo(() => subjects?.find((s) => s._id === subjectFilter), [subjects, subjectFilter]);
 
   const filteredSubjects = useMemo(() => {
     if (!subjects) return [];
@@ -63,12 +62,6 @@ export default function MarksPage() {
     const classLevel = selectedClass.level;
     return subjects.filter((s) => s.level === classLevel);
   }, [subjects, selectedClass]);
-
-  const filteredClasses = useMemo(() => {
-    if (!classes) return [];
-    if (!selectedSubject) return classes;
-    return classes.filter((c) => c.level === selectedSubject.level);
-  }, [classes, selectedSubject]);
 
   const loading = isLoading || classesLoading || subjectsLoading;
 
@@ -114,14 +107,14 @@ export default function MarksPage() {
           <table className="w-full text-sm">
             <thead className="bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300">
               <tr>
-                <th className="text-left p-3">Student</th>
-                <th className="text-left p-3">Subject</th>
-                <th className="text-left p-3">Class</th>
-                <th className="text-left p-3">Term</th>
-                <th className="text-left p-3">Midterm</th>
-                <th className="text-left p-3">End-Term</th>
-                <th className="text-left p-3">Average</th>
-                <th className="text-left p-3">Grade</th>
+                <th scope="col" className="text-left p-3">Student</th>
+                <th scope="col" className="text-left p-3">Subject</th>
+                <th scope="col" className="text-left p-3">Class</th>
+                <th scope="col" className="text-left p-3">Term</th>
+                <th scope="col" className="text-left p-3">Midterm</th>
+                <th scope="col" className="text-left p-3">End-Term</th>
+                <th scope="col" className="text-left p-3">Average</th>
+                <th scope="col" className="text-left p-3">Grade</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-gray-700">

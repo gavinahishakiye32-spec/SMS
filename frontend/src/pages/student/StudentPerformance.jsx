@@ -67,11 +67,11 @@ export default function StudentPerformance() {
             <table className="w-full text-sm border">
               <thead>
                 <tr className="bg-gray-50 dark:bg-gray-800">
-                  <th className="border p-2 text-left text-gray-700 dark:text-gray-300">Subject</th>
-                  <th className="border p-2 text-gray-700 dark:text-gray-300">Mid-Term/100</th>
-                  <th className="border p-2 text-gray-700 dark:text-gray-300">End-Term/100</th>
-                  <th className="border p-2 text-gray-700 dark:text-gray-300">Average</th>
-                  <th className="border p-2 text-gray-700 dark:text-gray-300">Grade</th>
+                  <th scope="col" className="border p-2 text-left text-gray-700 dark:text-gray-300">Subject</th>
+                  <th scope="col" className="border p-2 text-gray-700 dark:text-gray-300">Mid-Term/100</th>
+                  <th scope="col" className="border p-2 text-gray-700 dark:text-gray-300">End-Term/100</th>
+                  <th scope="col" className="border p-2 text-gray-700 dark:text-gray-300">Average</th>
+                  <th scope="col" className="border p-2 text-gray-700 dark:text-gray-300">Grade</th>
                 </tr>
               </thead>
               <tbody>

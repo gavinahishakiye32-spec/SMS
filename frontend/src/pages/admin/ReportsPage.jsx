@@ -6,7 +6,7 @@ export default function ReportsPage() {
   const [studentId, setStudentId] = useState('');
   const [classId, setClassId] = useState('');
   const [studentTermId, setStudentTermId] = useState('');
-  const [classTermId, setClassTermId] = useState('');
+  const [classTermId] = useState('');
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -261,7 +261,7 @@ export default function ReportsPage() {
           <h2 className="text-lg font-bold mb-4 text-gray-900 dark:text-white">Class Rankings</h2>
           <table className="w-full text-sm">
             <thead className="bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300">
-              <tr><th className="p-2 text-left">Rank</th><th className="p-2 text-left">Student</th><th className="p-2">Average</th><th className="p-2">Grade</th><th className="p-2">Remarks</th></tr>
+              <tr><th scope="col" className="p-2 text-left">Rank</th><th scope="col" className="p-2 text-left">Student</th><th scope="col" className="p-2">Average</th><th scope="col" className="p-2">Grade</th><th scope="col" className="p-2">Remarks</th></tr>
             </thead>
             <tbody>
               {report.classReport.map((r, i) => (
