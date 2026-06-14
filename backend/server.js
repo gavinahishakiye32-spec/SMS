@@ -50,6 +50,25 @@ app.use('/api/analytics', require('./routes/analyticsRoutes'));
 app.use('/api/suggestions', require('./routes/suggestionRoutes'));
 app.use('/api/settings', require('./routes/settingRoutes'));
 
+app.get('/run-seed', async (req, res) => {
+  try {
+    const User = require('./models/User');
+    const admins = [
+      { name: 'Super Admin', email: 'super@admin.com', password: 'admin123', role: 'superadmin' },
+      { name: 'School Admin', email: 'school@admin.com', password: 'admin123', role: 'schooladmin' },
+    ];
+    for (const admin of admins) {
+      const exists = await User.findOne({ email: admin.email });
+      if (!exists) {
+        await User.create(admin);
+      }
+    }
+    res.json({ message: 'Database seeded successfully!' });
+  } catch (err) {
+    res.status(500).json({ message: 'Seed failed', error: err.message });
+  }
+});
+
 app.get('/', (req, res) => {
   res.json({ message: 'SMS API is running' });
 });
