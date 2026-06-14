@@ -32,7 +32,7 @@ API.interceptors.request.use((req) => {
 API.interceptors.response.use(
   (res) => res,
   (err) => {
-    if (err.response?.status === 401) {
+    if (err.response?.status === 401 && !err.config.url.includes('/auth/login')) {
       clearTokenCache();
       localStorage.removeItem('user');
       window.location.href = '/login';

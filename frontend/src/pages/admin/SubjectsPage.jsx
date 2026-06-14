@@ -6,10 +6,8 @@ import API from '../../services/api';
 export default function SubjectsPage() {
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState(null);
-  const [showAssign, setShowAssign] = useState(null);
   const [form, setForm] = useState({ name: '', level: 'O-Level', classIds: [] });
   const [filterLevel, setFilterLevel] = useState('');
-  const [assignTeacherId, setAssignTeacherId] = useState('');
   const queryClient = useQueryClient();
   const { addToast } = useToast();
 
@@ -17,13 +15,6 @@ export default function SubjectsPage() {
     queryKey: ['subjects', filterLevel],
     queryFn: () => API.get(`/subjects${filterLevel ? `?level=${filterLevel}` : ''}`).then((r) => r.data),
   });
-
-  const { data: teachers } = useQuery({
-    queryKey: ['teachers-all'],
-    queryFn: () => API.get('/teachers?limit=100').then((r) => r.data.data),
-  });
-
-  const assigningSubject = showAssign ? data?.data?.find((s) => s._id === showAssign) : null;
 
   const { data: classes } = useQuery({
     queryKey: ['classes-all'],
@@ -34,8 +25,6 @@ export default function SubjectsPage() {
     mutationFn: (id) => API.delete(`/subjects/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['subjects'] });
-      queryClient.invalidateQueries({ queryKey: ['teachers'] });
-      queryClient.invalidateQueries({ queryKey: ['teachers-all'] });
       queryClient.invalidateQueries({ queryKey: ['classes-list'] });
       queryClient.invalidateQueries({ queryKey: ['classes-all'] });
     },
@@ -55,8 +44,6 @@ export default function SubjectsPage() {
       setEditing(null);
       setForm({ name: '', level: 'O-Level', classIds: [] });
       queryClient.invalidateQueries({ queryKey: ['subjects'] });
-      queryClient.invalidateQueries({ queryKey: ['teachers'] });
-      queryClient.invalidateQueries({ queryKey: ['teachers-all'] });
       queryClient.invalidateQueries({ queryKey: ['classes-list'] });
       queryClient.invalidateQueries({ queryKey: ['classes-all'] });
     } catch (err) { addToast(err.response?.data?.message || 'Error', 'error'); }
@@ -71,27 +58,13 @@ export default function SubjectsPage() {
     }));
   };
 
-  const handleAssign = async (subjectId) => {
-    try {
-      await API.post(`/subjects/${subjectId}/assign-teacher`, { teacherId: assignTeacherId });
-      setShowAssign(null);
-      setAssignTeacherId('');
-      addToast('Teacher assigned successfully', 'success');
-      queryClient.invalidateQueries({ queryKey: ['subjects'] });
-      queryClient.invalidateQueries({ queryKey: ['teachers'] });
-      queryClient.invalidateQueries({ queryKey: ['teachers-all'] });
-      queryClient.invalidateQueries({ queryKey: ['classes-list'] });
-      queryClient.invalidateQueries({ queryKey: ['classes-all'] });
-    } catch (err) { addToast(err.response?.data?.message || 'Error', 'error'); }
-  };
-
   return (
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Subjects</h1>
         <div className="flex flex-wrap gap-3 w-full sm:w-auto">
           <select value={filterLevel} onChange={(e) => setFilterLevel(e.target.value)}
-            className="flex-1 sm:flex-none px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+            className="flex-1 sm:flex-none px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
             <option value="">All Levels</option>
             <option value="O-Level">O-Level</option>
             <option value="A-Level">A-Level</option>
@@ -105,9 +78,9 @@ export default function SubjectsPage() {
             <h2 className="text-lg font-bold mb-4 text-gray-900 dark:text-white">{editing ? 'Edit Subject' : 'Add Subject'}</h2>
             <form onSubmit={handleSubmit} className="space-y-3">
               <input placeholder="Subject Name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })}
-                className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white" required />
+                className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white" required />
               <select value={form.level} onChange={(e) => setForm({ ...form, level: e.target.value, classIds: [] })}
-                className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+                className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
                 <option value="O-Level">O-Level</option><option value="A-Level">A-Level</option>
               </select>
               <div>
@@ -124,7 +97,7 @@ export default function SubjectsPage() {
               </div>
               <div className="flex gap-3">
                 <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg">{editing ? 'Update' : 'Create'}</button>
-                <button type="button" onClick={() => { setShowForm(false); setEditing(null); }} className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg">Cancel</button>
+                <button type="button" onClick={() => { setShowForm(false); setEditing(null); }} className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg dark:hover:bg-gray-600">Cancel</button>
               </div>
             </form>
           </div>
@@ -137,7 +110,6 @@ export default function SubjectsPage() {
               <tr>
                 <th scope="col" className="text-left p-3">Name</th>
                 <th scope="col" className="text-left p-3">Level</th>
-                <th scope="col" className="text-left p-3">Classes</th>
                 <th scope="col" className="text-left p-3">Teachers</th>
                 <th scope="col" className="text-left p-3">Actions</th>
               </tr>
@@ -147,11 +119,17 @@ export default function SubjectsPage() {
                 <tr key={s._id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
                   <td className="p-3 font-medium text-gray-900 dark:text-white">{s.name}</td>
                   <td className="p-3 text-gray-700 dark:text-gray-300">{s.level}</td>
-                  <td className="p-3 text-gray-700 dark:text-gray-300">{(s.classIds || []).map((c) => c.name).join(', ') || '-'}</td>
-                  <td className="p-3 text-gray-700 dark:text-gray-300">{(s.teacherIds || []).map((t) => `${t.firstName} ${t.lastName}`).join(', ') || '-'}</td>
+                  <td className="p-3 text-gray-700 dark:text-gray-300">
+                    {(s.teachers || []).length === 0 ? '-' : (s.teachers || []).map((t) => {
+                      const classNames = (t.classIds || []).map((cid) => {
+                        const found = classes?.find((c) => c._id === cid);
+                        return found ? found.name : cid;
+                      }).filter(Boolean).join(', ');
+                      return classNames ? `${t.firstName} ${t.lastName} (${classNames})` : `${t.firstName} ${t.lastName}`;
+                    }).join(', ')}
+                  </td>
                   <td className="p-3 flex flex-wrap gap-2">
                     <button onClick={() => { setForm({ name: s.name, level: s.level, classIds: s.classIds?.map((c) => c._id) || [] }); setEditing(s._id); setShowForm(true); }} className="text-blue-600 hover:underline text-xs">Edit</button>
-                    <button onClick={() => setShowAssign(s._id)} className="text-green-600 hover:underline text-xs">Assign</button>
                     <button onClick={() => { if (confirm('Delete?')) deleteMutation.mutate(s._id); }} className="text-red-600 hover:underline text-xs">Delete</button>
                   </td>
                 </tr>
@@ -160,22 +138,7 @@ export default function SubjectsPage() {
           </table>
         </div>
       </div>
-      {showAssign && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-2 sm:p-4" onClick={() => setShowAssign(null)}>
-          <div className="bg-white dark:bg-gray-900 rounded-xl p-4 sm:p-6 w-full max-w-md mx-2 sm:mx-0" onClick={(e) => e.stopPropagation()}>
-            <h2 className="text-lg font-bold mb-4 text-gray-900 dark:text-white">Assign Teacher {assigningSubject ? `(${assigningSubject.name})` : ''}</h2>
-            <select value={assignTeacherId} onChange={(e) => setAssignTeacherId(e.target.value)}
-              className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white mb-4">
-              <option value="">Select Teacher</option>
-              {teachers ? teachers.map((t) => <option key={t._id} value={t._id}>{t.firstName} {t.lastName}</option>) : <option disabled>Loading...</option>}
-            </select>
-            <div className="flex gap-3">
-              <button onClick={() => handleAssign(showAssign)} className="px-4 py-2 bg-blue-600 text-white rounded-lg">Assign</button>
-              <button onClick={() => setShowAssign(null)} className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg">Cancel</button>
-            </div>
-          </div>
-        </div>
-      )}
+
     </div>
   );
 }

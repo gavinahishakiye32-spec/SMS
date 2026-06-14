@@ -43,10 +43,15 @@ export default function StudentsPage() {
   });
 
   const filteredSections = useMemo(() => {
-    if (!sections) return [];
-    if (!classFilter) return sections;
-    return sections.filter((s) => (s.classId?._id || s.classId) === classFilter);
-  }, [sections, classFilter]);
+    if (!sections || !classes) return [];
+    if (!classFilter) {
+      if (!level) return sections;
+      return sections.filter((s) => s.level === level);
+    }
+    const selectedClass = classes.find((c) => c._id === classFilter);
+    if (!selectedClass) return sections;
+    return sections.filter((s) => s.level === selectedClass.level);
+  }, [sections, classFilter, level, classes]);
 
   const resetPasswordMutation = useMutation({
     mutationFn: ({ userId }) => API.post('/auth/reset-password', { userId, newPassword: 'student123' }),
@@ -111,32 +116,32 @@ export default function StudentsPage() {
         <input
           type="text" placeholder="Search by name or code..." value={search}
           onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-          className="w-full sm:w-72 px-4 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+          className="w-full sm:w-72 px-4 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
         />
         <select value={level} onChange={(e) => { setLevel(e.target.value); setClassFilter(''); setSectionFilter(''); setPage(1); }}
-          className="w-full sm:w-auto px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+          className="w-full sm:w-auto px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
           <option value="">All Levels</option>
           <option value="O-Level">O-Level</option>
           <option value="A-Level">A-Level</option>
         </select>
         <select value={classFilter} onChange={(e) => { setClassFilter(e.target.value); setSectionFilter(''); setPage(1); }}
-          className="w-full sm:w-auto px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+          className="w-full sm:w-auto px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
           <option value="">All Classes</option>
           {classes ? classes.filter((c) => !level || c.level === level).map((c) => <option key={c._id} value={c._id}>{c.name}</option>) : <option disabled>Loading...</option>}
         </select>
         <select value={sectionFilter} onChange={(e) => { setSectionFilter(e.target.value); setPage(1); }}
-          className="w-full sm:w-auto px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+          className="w-full sm:w-auto px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
           <option value="">All Sections</option>
           {filteredSections.map((s) => <option key={s._id} value={s._id}>{s.name}</option>)}
         </select>
         <select value={genderFilter} onChange={(e) => { setGenderFilter(e.target.value); setPage(1); }}
-          className="w-full sm:w-auto px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+          className="w-full sm:w-auto px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
           <option value="">All Genders</option>
           <option value="Male">Male</option>
           <option value="Female">Female</option>
         </select>
         <select value={academicYearFilter} onChange={(e) => { setAcademicYearFilter(e.target.value); setPage(1); }}
-          className="w-full sm:w-auto px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+          className="w-full sm:w-auto px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
           <option value="">All Years</option>
           {academicYears ? academicYears.map((y) => <option key={y._id} value={y._id}>{y.year}</option>) : <option disabled>Loading...</option>}
         </select>
@@ -148,36 +153,40 @@ export default function StudentsPage() {
             <form onSubmit={handleSubmit} className="space-y-3">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <input placeholder="First Name" value={form.firstName} onChange={(e) => setForm({ ...form, firstName: e.target.value })}
-                  className="px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white" required />
+                  className="px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white" required />
                 <input placeholder="Last Name" value={form.lastName} onChange={(e) => setForm({ ...form, lastName: e.target.value })}
-                  className="px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white" required />
+                  className="px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white" required />
               </div>
               <select value={form.gender} onChange={(e) => setForm({ ...form, gender: e.target.value })}
-                className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+                className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
                 <option>Male</option><option>Female</option>
               </select>
               <label className="block">
                 <span className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">Date of Birth</span>
                 <input type="date" value={form.dateOfBirth} onChange={(e) => setForm({ ...form, dateOfBirth: e.target.value })}
-                  className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
+                  className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
               </label>
               <input placeholder="NIN" value={form.NIN} onChange={(e) => setForm({ ...form, NIN: e.target.value })}
-                className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
+                className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
               <input placeholder="Phone Number" value={form.phoneNumber} onChange={(e) => setForm({ ...form, phoneNumber: e.target.value })}
-                className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
+                className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
               <input placeholder="Login Email (leave blank for auto-generated)" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })}
-                className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
+                className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
               <input placeholder="Address" value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })}
-                className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
+                className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
               <select value={form.classId} onChange={(e) => setForm({ ...form, classId: e.target.value })}
-                className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+                className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
                 <option value="">Select Class</option>
                 {classes ? classes.map((c) => <option key={c._id} value={c._id}>{c.name} ({c.level})</option>) : <option disabled>Loading...</option>}
               </select>
               <select value={form.sectionId} onChange={(e) => setForm({ ...form, sectionId: e.target.value })}
-                className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+                className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
                 <option value="">Select Section</option>
-                {sections ? sections.filter((s) => !form.classId || (s.classId?._id || s.classId) === form.classId).map((s) => (
+                {sections && classes ? sections.filter((s) => {
+                  if (!form.classId) return true;
+                  const selClass = classes.find((c) => c._id === form.classId);
+                  return selClass && s.level === selClass.level;
+                }).map((s) => (
                   <option key={s._id} value={s._id}>{s.name}</option>
                 )) : <option disabled>Loading...</option>}
               </select>
@@ -185,7 +194,7 @@ export default function StudentsPage() {
                 <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
                   {editing ? 'Update' : 'Create'}
                 </button>
-                <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg">Cancel</button>
+                <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg dark:hover:bg-gray-600">Cancel</button>
               </div>
             </form>
           </div>
@@ -241,8 +250,8 @@ export default function StudentsPage() {
         <div className="flex flex-col sm:flex-row justify-between items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
           <span>Page {data.pagination.page} of {data.pagination.totalPages}</span>
           <div className="flex gap-2">
-            <button disabled={page <= 1} onClick={() => setPage((p) => p - 1)} className="px-3 py-1 border rounded-lg disabled:opacity-50 bg-white dark:bg-gray-800 text-gray-900 dark:text-white">Prev</button>
-            <button disabled={page >= data.pagination.totalPages} onClick={() => setPage((p) => p + 1)} className="px-3 py-1 border rounded-lg disabled:opacity-50 bg-white dark:bg-gray-800 text-gray-900 dark:text-white">Next</button>
+            <button disabled={page <= 1} onClick={() => setPage((p) => p - 1)} className="px-3 py-1 border dark:border-gray-600 rounded-lg disabled:opacity-50 bg-white dark:bg-gray-800 text-gray-900 dark:text-white">Prev</button>
+            <button disabled={page >= data.pagination.totalPages} onClick={() => setPage((p) => p + 1)} className="px-3 py-1 border dark:border-gray-600 rounded-lg disabled:opacity-50 bg-white dark:bg-gray-800 text-gray-900 dark:text-white">Next</button>
           </div>
         </div>
       )}

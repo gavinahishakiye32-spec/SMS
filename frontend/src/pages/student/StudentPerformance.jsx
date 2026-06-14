@@ -1,13 +1,20 @@
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import API from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 
 export default function StudentPerformance() {
   const { user } = useAuth();
+  const [termId, setTermId] = useState('');
 
   const { data: settings } = useQuery({
     queryKey: ['school-settings'],
     queryFn: () => API.get('/settings').then((r) => r.data.data),
+  });
+
+  const { data: terms } = useQuery({
+    queryKey: ['terms'],
+    queryFn: () => API.get('/terms').then((r) => r.data.data),
   });
 
   const { data: profile } = useQuery({
@@ -17,22 +24,33 @@ export default function StudentPerformance() {
   });
 
   const { data: marks } = useQuery({
-    queryKey: ['student-marks-perf', profile?._id],
-    queryFn: () => API.get(`/marks/student/${profile._id}`).then((r) => r.data.data),
+    queryKey: ['student-marks-perf', profile?._id, termId],
+    queryFn: () => API.get(`/marks/student/${profile._id}${termId ? `?termId=${termId}` : ''}`).then((r) => r.data.data),
     enabled: !!profile?._id,
   });
 
   const { data: ranking } = useQuery({
-    queryKey: ['student-ranking', profile?._id],
-    queryFn: () => API.get(`/students/${profile._id}/ranking`).then((r) => r.data.data),
+    queryKey: ['student-ranking', profile?._id, termId],
+    queryFn: () => API.get(`/students/${profile._id}/ranking${termId ? `?termId=${termId}` : ''}`).then((r) => r.data.data),
     enabled: !!profile?._id,
   });
 
   return (
-    <div className="space-y-6">
+    <div data-print-hidden className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 no-print">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">My Performance</h1>
-        <button onClick={() => window.print()} className="px-4 py-2 bg-blue-600 text-white rounded-lg">Print</button>
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">My Performance</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            {termId
+              ? terms?.find((t) => t._id === termId)?.name || 'Selected Term'
+              : 'Latest Term'}
+          </p>
+        </div>
+        <select value={termId} onChange={(e) => setTermId(e.target.value)}
+          className="w-full sm:w-auto px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm">
+          <option value="">Latest Term</option>
+          {terms?.map((t) => <option key={t._id} value={t._id}>{t.name}</option>)}
+        </select>
       </div>
       <div id="report-card">
         <div className="text-center mb-6">

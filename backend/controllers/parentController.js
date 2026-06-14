@@ -1,6 +1,5 @@
 const asyncHandler = require('express-async-handler');
 const Parent = require('../models/Parent');
-const Student = require('../models/Student');
 
 const getParents = asyncHandler(async (req, res) => {
   const page = parseInt(req.query.page) || 1;
@@ -19,6 +18,7 @@ const getParents = asyncHandler(async (req, res) => {
     .limit(limit)
     .sort({ createdAt: -1 })
     .lean();
+
   return res.json({
     success: true,
     data: parents,
@@ -27,7 +27,7 @@ const getParents = asyncHandler(async (req, res) => {
 });
 
 const createParent = asyncHandler(async (req, res) => {
-  const { fullName, nationalId, NIN, phoneNumber, email, address, studentIds } = req.body;
+  const { fullName, parentType, nationalId, NIN, phoneNumber, email, address, studentIds } = req.body;
   if (!fullName) {
     return res.status(400).json({
       success: false,
@@ -36,6 +36,7 @@ const createParent = asyncHandler(async (req, res) => {
   }
   const parent = await Parent.create({
     fullName,
+    parentType: parentType || undefined,
     nationalId,
     NIN,
     phoneNumber,
@@ -70,7 +71,7 @@ const updateParent = asyncHandler(async (req, res) => {
       message: 'Parent not found',
     });
   }
-  const fields = ['fullName', 'nationalId', 'NIN', 'phoneNumber', 'email', 'address', 'studentIds'];
+  const fields = ['fullName', 'parentType', 'nationalId', 'NIN', 'phoneNumber', 'email', 'address', 'studentIds'];
   fields.forEach((f) => {
     if (req.body[f] !== undefined) parent[f] = req.body[f];
   });

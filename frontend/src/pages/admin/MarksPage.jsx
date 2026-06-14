@@ -85,19 +85,19 @@ export default function MarksPage() {
     <div className="space-y-4">
       <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Marks</h1>
       <div className="flex flex-col sm:flex-row flex-wrap gap-3">
-        <select value={classFilter} onChange={(e) => { setClassFilter(e.target.value); if (!e.target.value) setSubjectFilter(''); }} className="w-full sm:w-auto px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+        <select value={classFilter} onChange={(e) => { setClassFilter(e.target.value); if (!e.target.value) setSubjectFilter(''); }} className="w-full sm:w-auto px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
           <option value="">All Classes</option>
           {classes?.map((c) => <option key={c._id} value={c._id}>{c.name}</option>)}
         </select>
-        <select value={subjectFilter} onChange={(e) => { setSubjectFilter(e.target.value); if (!e.target.value) setClassFilter(''); }} className="w-full sm:w-auto px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+        <select value={subjectFilter} onChange={(e) => { setSubjectFilter(e.target.value); if (!e.target.value) setClassFilter(''); }} className="w-full sm:w-auto px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
           <option value="">All Subjects</option>
           {filteredSubjects?.map((s) => <option key={s._id} value={s._id}>{s.name} ({s.level})</option>)}
         </select>
-        <select value={termFilter} onChange={(e) => setTermFilter(e.target.value)} className="w-full sm:w-auto px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+        <select value={termFilter} onChange={(e) => setTermFilter(e.target.value)} className="w-full sm:w-auto px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
           <option value="">All Terms</option>
           {terms?.map((t) => <option key={t._id} value={t._id}>{t.name}</option>)}
         </select>
-        <select value={academicYearFilter} onChange={(e) => setAcademicYearFilter(e.target.value)} className="w-full sm:w-auto px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+        <select value={academicYearFilter} onChange={(e) => setAcademicYearFilter(e.target.value)} className="w-full sm:w-auto px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
           <option value="">All Years</option>
           {academicYears?.map((y) => <option key={y._id} value={y._id}>{y.year}</option>)}
         </select>
@@ -148,8 +148,8 @@ export default function MarksPage() {
         <div className="flex flex-col sm:flex-row justify-between items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
           <span className="dark:text-gray-300">Page {data.pagination.page} of {data.pagination.totalPages} ({data.pagination.total} total)</span>
           <div className="flex gap-2">
-            <button disabled={page <= 1} onClick={() => setPage((p) => p - 1)} className="px-3 py-1 border rounded-lg disabled:opacity-50 disabled:cursor-not-allowed bg-white dark:bg-gray-800 text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700">Prev</button>
-            <button disabled={page >= data.pagination.totalPages} onClick={() => setPage((p) => p + 1)} className="px-3 py-1 border rounded-lg disabled:opacity-50 disabled:cursor-not-allowed bg-white dark:bg-gray-800 text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700">Next</button>
+            <button disabled={page <= 1} onClick={() => setPage((p) => p - 1)} className="px-3 py-1 border dark:border-gray-600 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed bg-white dark:bg-gray-800 text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700">Prev</button>
+            <button disabled={page >= data.pagination.totalPages} onClick={() => setPage((p) => p + 1)} className="px-3 py-1 border dark:border-gray-600 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed bg-white dark:bg-gray-800 text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700">Next</button>
           </div>
         </div>
       )}

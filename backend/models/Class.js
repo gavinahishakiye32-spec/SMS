@@ -13,6 +13,12 @@ const classSchema = mongoose.Schema(
   { timestamps: true }
 );
 
+classSchema.pre('validate', function (next) {
+  const oLevel = ['S1', 'S2', 'S3', 'S4'];
+  this.level = oLevel.includes(this.name) ? 'O-Level' : 'A-Level';
+  next();
+});
+
 classSchema.index({ level: 1 });
 classSchema.index({ name: 1, academicYearId: 1 }, { unique: true });
 

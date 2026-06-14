@@ -6,6 +6,7 @@ const Student = require('../models/Student');
 const Class = require('../models/Class');
 const Subject = require('../models/Subject');
 const { calculateGrade, calculateSubjectAverage, calculateGradePoints } = require('../utils/gradeUtils');
+const { getTeacherClassIdSet, getTeacherSubjectIds, getTeacherSubjectClassIdSet } = require('../utils/teacherPermissions');
 
 const getMarks = asyncHandler(async (req, res) => {
   const page = parseInt(req.query.page) || 1;
@@ -24,15 +25,7 @@ const getMarks = asyncHandler(async (req, res) => {
     if (!req.query.classId) query.classId = { $in: levelFilteredClassIds };
   }
   if (req.user.role === 'teacher') {
-    const teacher = await Teacher.findOne({ userId: req.user._id }).populate({ path: 'subjectIds', select: 'classIds' });
-    if (!teacher) {
-      return res.status(403).json({ success: false, message: 'Teacher profile not found' });
-    }
-    const classIdSet = new Set();
-    for (const subject of teacher.subjectIds) {
-      for (const cid of subject.classIds) classIdSet.add(cid.toString());
-    }
-    const allowedClassIds = [...classIdSet];
+    const allowedClassIds = [...await getTeacherClassIdSet(req.user._id)];
     const specificClassId = typeof query.classId === 'string' ? query.classId : null;
     if (specificClassId) {
       if (!allowedClassIds.includes(specificClassId)) {
@@ -98,14 +91,15 @@ const addMarks = asyncHandler(async (req, res) => {
         message: 'Teacher profile not found',
       });
     }
-    if (!teacher.subjectIds.some(sid => sid.toString() === subjectId)) {
+    const teacherSubjectIds = await getTeacherSubjectIds(req.user._id);
+    if (!teacherSubjectIds.includes(subjectId)) {
       return res.status(403).json({
         success: false,
         message: 'You do not have permission to add marks for this subject',
       });
     }
-    const subject = await Subject.findById(subjectId);
-    if (!subject || !subject.classIds.some(cid => cid.toString() === classId.toString())) {
+    const allowedClassIds = await getTeacherSubjectClassIdSet(req.user._id, subjectId);
+    if (!allowedClassIds.has(classId.toString())) {
       return res.status(403).json({
         success: false,
         message: 'You do not have permission to add marks for this class',
@@ -118,15 +112,6 @@ const addMarks = asyncHandler(async (req, res) => {
       message: 'Please provide teacherId',
     });
   }
-  const existingMark = await Mark.findOne({ studentId, subjectId, termId, academicYearId });
-  if (existingMark) {
-    return res.status(409).json({
-      success: false,
-      message: 'Marks already exist for this student, subject, term, and academic year combination. Please update the existing marks instead of creating new ones.',
-      data: existingMark,
-    });
-  }
-  
   try {
     const mark = await Mark.create({
       studentId,
@@ -149,7 +134,7 @@ const addMarks = asyncHandler(async (req, res) => {
     if (error.code === 11000) {
       return res.status(409).json({
         success: false,
-        message: 'Marks already exist for this student, subject, term, and academic year combination. Please update the existing marks instead.',
+        message: 'Marks already exist for this student, subject, term, and academic year combination.',
       });
     }
     throw error;
@@ -170,8 +155,9 @@ const getMarkById = asyncHandler(async (req, res) => {
     });
   }
   if (req.user.role === 'teacher') {
-    const teacher = await Teacher.findOne({ userId: req.user._id }).select('subjectIds').lean();
-    if (!teacher || !teacher.subjectIds.some(sid => sid.toString() === (mark.subjectId?._id?.toString() || mark.subjectId?.toString()))) {
+    const teacherSubjectIds = await getTeacherSubjectIds(req.user._id);
+    const targetSubjectId = mark.subjectId?._id?.toString() || mark.subjectId?.toString();
+    if (!teacherSubjectIds.includes(targetSubjectId)) {
       return res.status(403).json({
         success: false,
         message: 'You do not have permission to view this mark record',
@@ -190,15 +176,15 @@ const updateMarks = asyncHandler(async (req, res) => {
     });
   }
   if (req.user.role === 'teacher') {
-    const teacher = await Teacher.findOne({ userId: req.user._id });
-    if (!teacher || !teacher.subjectIds.some(sid => sid.toString() === mark.subjectId.toString())) {
+    const teacherSubjectIds = await getTeacherSubjectIds(req.user._id);
+    if (!teacherSubjectIds.includes(mark.subjectId.toString())) {
       return res.status(403).json({
         success: false,
         message: 'You do not have permission to update marks for this subject',
       });
     }
-    const subject = await Subject.findById(mark.subjectId);
-    if (!subject || !subject.classIds.some(cid => cid.toString() === mark.classId.toString())) {
+    const allowedClassIds = await getTeacherSubjectClassIdSet(req.user._id, mark.subjectId);
+    if (!allowedClassIds.has(mark.classId.toString())) {
       return res.status(403).json({
         success: false,
         message: 'You do not have permission to update marks for this class',
@@ -264,15 +250,8 @@ const getStudentMarks = asyncHandler(async (req, res) => {
     });
   }
   if (req.user.role === 'teacher') {
-    const teacher = await Teacher.findOne({ userId: req.user._id }).populate({ path: 'subjectIds', select: 'classIds' });
-    if (!teacher) {
-      return res.status(403).json({ success: false, message: 'Teacher profile not found' });
-    }
-    const classIdSet = new Set();
-    for (const subject of teacher.subjectIds) {
-      for (const cid of subject.classIds) classIdSet.add(cid.toString());
-    }
-    if (!classIdSet.has(studentExists.classId?.toString())) {
+    const allowedClassIds = await getTeacherClassIdSet(req.user._id);
+    if (!allowedClassIds.has(studentExists.classId?.toString())) {
       return res.status(403).json({
         success: false,
         message: 'You do not have permission to view these marks',
@@ -293,16 +272,9 @@ const getStudentMarks = asyncHandler(async (req, res) => {
 const getStudentSubjectMarks = asyncHandler(async (req, res) => {
   const { studentId, subjectId } = req.params;
   if (req.user.role === 'teacher') {
-    const teacher = await Teacher.findOne({ userId: req.user._id }).populate({ path: 'subjectIds', select: 'classIds' });
-    if (!teacher) {
-      return res.status(403).json({ success: false, message: 'Teacher profile not found' });
-    }
-    const classIdSet = new Set();
-    for (const subject of teacher.subjectIds) {
-      for (const cid of subject.classIds) classIdSet.add(cid.toString());
-    }
+    const allowedClassIds = await getTeacherClassIdSet(req.user._id);
     const student = await Student.findById(studentId).select('classId').lean();
-    if (!student || !classIdSet.has(student.classId?.toString())) {
+    if (!student || !allowedClassIds.has(student.classId?.toString())) {
       return res.status(403).json({
         success: false,
         message: 'You do not have permission to view these marks',
@@ -318,15 +290,8 @@ const getStudentSubjectMarks = asyncHandler(async (req, res) => {
 const getClassMarks = asyncHandler(async (req, res) => {
   const { classId } = req.params;
   if (req.user.role === 'teacher') {
-    const teacher = await Teacher.findOne({ userId: req.user._id }).populate({ path: 'subjectIds', select: 'classIds' });
-    if (!teacher) {
-      return res.status(403).json({ success: false, message: 'Teacher profile not found' });
-    }
-    const classIdSet = new Set();
-    for (const subject of teacher.subjectIds) {
-      for (const cid of subject.classIds) classIdSet.add(cid.toString());
-    }
-    if (!classIdSet.has(classId.toString())) {
+    const allowedClassIds = await getTeacherClassIdSet(req.user._id);
+    if (!allowedClassIds.has(classId.toString())) {
       return res.status(403).json({
         success: false,
         message: 'You do not have permission to view marks for this class',

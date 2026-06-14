@@ -30,14 +30,20 @@ export default function StudentReport() {
   });
 
   return (
-    <div className="space-y-4">
+    <div data-print-hidden className="space-y-4">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 no-print">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">My Report Card</h1>
-        <button onClick={() => window.print()} className="px-4 py-2 bg-blue-600 text-white rounded-lg">Print</button>
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">My Report Card</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            {termId
+              ? terms?.find((t) => t._id === termId)?.name || 'Selected Term'
+              : 'Latest Report'}
+          </p>
+        </div>
       </div>
       <div className="flex flex-col sm:flex-row flex-wrap gap-3 no-print">
         <select value={termId} onChange={(e) => setTermId(e.target.value)}
-          className="w-full sm:w-auto px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+          className="w-full sm:w-auto px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
           <option value="">Latest Report</option>
           {terms?.map((t) => <option key={t._id} value={t._id}>{t.name}</option>)}
         </select>
@@ -65,7 +71,7 @@ export default function StudentReport() {
             </div>
           </div>
           <h3 className="font-bold text-lg mb-2 text-gray-900 dark:text-white">Academic Performance</h3>
-          <table className="w-full text-sm mb-4 border">
+          <div className="overflow-x-auto"><table className="w-full text-sm mb-4 border">
             <thead><tr className="bg-gray-50 dark:bg-gray-800"><th scope="col" className="border p-2 text-left text-gray-700 dark:text-gray-300">Subject</th><th scope="col" className="border p-2 text-gray-700 dark:text-gray-300">Mid-Term/100</th><th scope="col" className="border p-2 text-gray-700 dark:text-gray-300">End-Term/100</th><th scope="col" className="border p-2 text-gray-700 dark:text-gray-300">Average</th><th scope="col" className="border p-2 text-gray-700 dark:text-gray-300">Grade</th></tr></thead>
             <tbody>
               {report.marks?.map((m) => (
@@ -82,7 +88,7 @@ export default function StudentReport() {
                 </tr>
               ))}
             </tbody>
-          </table>
+          </table></div>
           <div className="grid grid-cols-2 gap-4 text-sm text-gray-700 dark:text-gray-300">
             <div>
               <p><strong className="text-gray-900 dark:text-white">Total Marks:</strong> <span className="text-lg font-bold text-blue-600">{((report.report.midtermTotal || 0) + (report.report.endTermTotal || 0)).toFixed(0)}</span></p>

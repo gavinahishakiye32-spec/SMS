@@ -27,16 +27,16 @@ export function ToastProvider({ children }) {
   return (
     <ToastContext.Provider value={{ addToast }}>
       {children}
-      <div role="alert" aria-live="polite" className="fixed bottom-6 right-6 z-[100] flex flex-col gap-2">
+      <div role="alert" aria-live="polite" className="fixed bottom-4 sm:bottom-6 right-4 sm:right-6 z-[100] flex flex-col gap-2 max-w-[calc(100vw-2rem)] sm:max-w-none">
         {toasts.map((t) => (
           <div
             key={t.id}
             className={`flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg text-sm font-medium animate-slide-up ${
               t.type === 'success'
-                ? 'bg-green-600 text-white'
+                ? 'bg-green-600 dark:bg-green-700 text-white'
                 : t.type === 'error'
-                ? 'bg-red-600 text-white'
-                : 'bg-blue-600 text-white'
+                ? 'bg-red-600 dark:bg-red-700 text-white'
+                : 'bg-blue-600 dark:bg-blue-700 text-white'
             }`}
           >
             <span className="w-4 h-4">

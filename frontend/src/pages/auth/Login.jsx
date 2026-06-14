@@ -24,12 +24,12 @@ export default function Login() {
         navigate('/student/dashboard');
       }
     } catch (err) {
-      setError(err.message || 'Invalid credentials');
+      setError(err.response?.data?.message || 'Invalid credentials');
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-600 to-[#0F172A] p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-600 to-[#0F172A] dark:from-gray-900 dark:to-gray-950 p-4">
       <div className="w-full max-w-md bg-white dark:bg-gray-900 rounded-2xl shadow-2xl p-8">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">SMS</h1>

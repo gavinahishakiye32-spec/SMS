@@ -62,7 +62,7 @@ export default function Sidebar({ open, onClose }) {
     queryKey: ['suggestions-unread'],
     queryFn: () => API.get('/suggestions/unread-count').then((r) => r.data),
     enabled: !!user && user.role !== 'student',
-    refetchInterval: 5000,
+    refetchInterval: 30000,
     refetchOnWindowFocus: true,
   });
   const unreadCount = unreadData?.data?.count || 0;

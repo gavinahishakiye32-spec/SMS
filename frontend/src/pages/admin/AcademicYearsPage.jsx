@@ -43,7 +43,7 @@ export default function AcademicYearsPage() {
       <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Academic Years</h1>
       <div className="flex flex-col sm:flex-row flex-wrap gap-3">
         <input placeholder="Year (e.g., 2026)" value={year} onChange={(e) => setYear(e.target.value)}
-          className="w-full sm:w-40 px-4 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
+          className="w-full sm:w-40 px-4 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
         <button onClick={createMutation.mutate} className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-lg">Add Year</button>
       </div>
       {editing && (
@@ -52,10 +52,10 @@ export default function AcademicYearsPage() {
             <h2 className="text-lg font-bold mb-4 text-gray-900 dark:text-white">Edit Academic Year</h2>
             <div className="space-y-3">
               <input placeholder="Year (e.g., 2026)" value={editYear} onChange={(e) => setEditYear(e.target.value)}
-                className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
+                className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
               <div className="flex gap-3">
                 <button onClick={() => updateMutation.mutate({ id: editing, data: { year: editYear } })} className="px-4 py-2 bg-blue-600 text-white rounded-lg">Update</button>
-                <button onClick={() => { setEditing(null); setEditYear(''); }} className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg">Cancel</button>
+                <button onClick={() => { setEditing(null); setEditYear(''); }} className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg dark:hover:bg-gray-600">Cancel</button>
               </div>
             </div>
           </div>

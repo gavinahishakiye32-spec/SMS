@@ -6,6 +6,7 @@ const Student = require('../models/Student');
 const Class = require('../models/Class');
 const Teacher = require('../models/Teacher');
 const PDFDocument = require('pdfkit');
+const { getTeacherClassIdSet } = require('../utils/teacherPermissions');
 
 const getStudentReport = asyncHandler(async (req, res) => {
   const { studentId } = req.params;
@@ -27,15 +28,8 @@ const getStudentReport = asyncHandler(async (req, res) => {
     });
   }
   if (req.user.role === 'teacher') {
-    const teacher = await Teacher.findOne({ userId: req.user._id }).populate({ path: 'subjectIds', select: 'classIds' });
-    if (!teacher) {
-      return res.status(403).json({ success: false, message: 'Teacher profile not found' });
-    }
-    const classIdSet = new Set();
-    for (const subject of teacher.subjectIds) {
-      for (const cid of subject.classIds) classIdSet.add(cid.toString());
-    }
-    if (!classIdSet.has(student.classId?._id?.toString() || student.classId?.toString())) {
+    const allowedClassIds = await getTeacherClassIdSet(req.user._id);
+    if (!allowedClassIds.has(student.classId?._id?.toString() || student.classId?.toString())) {
       return res.status(403).json({
         success: false,
         message: 'You do not have permission to view this report',
@@ -68,15 +62,8 @@ const getStudentReport = asyncHandler(async (req, res) => {
 const getClassReport = asyncHandler(async (req, res) => {
   const { classId } = req.params;
   if (req.user.role === 'teacher') {
-    const teacher = await Teacher.findOne({ userId: req.user._id }).populate({ path: 'subjectIds', select: 'classIds' });
-    if (!teacher) {
-      return res.status(403).json({ success: false, message: 'Teacher profile not found' });
-    }
-    const classIdSet = new Set();
-    for (const subject of teacher.subjectIds) {
-      for (const cid of subject.classIds) classIdSet.add(cid.toString());
-    }
-    if (!classIdSet.has(classId.toString())) {
+    const allowedClassIds = await getTeacherClassIdSet(req.user._id);
+    if (!allowedClassIds.has(classId.toString())) {
       return res.status(403).json({
         success: false,
         message: 'You do not have permission to view reports for this class',
@@ -119,10 +106,11 @@ const searchReports = asyncHandler(async (req, res) => {
 
   let studentQuery = {};
   if (q) {
+    const escaped = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     studentQuery.$or = [
-      { firstName: { $regex: q, $options: 'i' } },
-      { lastName: { $regex: q, $options: 'i' } },
-      { studentCode: { $regex: q, $options: 'i' } },
+      { firstName: { $regex: escaped, $options: 'i' } },
+      { lastName: { $regex: escaped, $options: 'i' } },
+      { studentCode: { $regex: escaped, $options: 'i' } },
     ];
     if (mongoose.Types.ObjectId.isValid(q)) {
       studentQuery.$or.push({ _id: q });
@@ -132,15 +120,7 @@ const searchReports = asyncHandler(async (req, res) => {
     studentQuery.classId = classId;
   }
   if (req.user.role === 'teacher') {
-    const teacher = await Teacher.findOne({ userId: req.user._id }).populate({ path: 'subjectIds', select: 'classIds' });
-    if (!teacher) {
-      return res.status(403).json({ success: false, message: 'Teacher profile not found' });
-    }
-    const classIdSet = new Set();
-    for (const subject of teacher.subjectIds) {
-      for (const cid of subject.classIds) classIdSet.add(cid.toString());
-    }
-    const allowedClassIds = [...classIdSet];
+    const allowedClassIds = [...await getTeacherClassIdSet(req.user._id)];
     const specificClassId = typeof studentQuery.classId === 'string' ? studentQuery.classId : null;
     if (specificClassId) {
       if (!allowedClassIds.includes(specificClassId)) {
@@ -203,15 +183,8 @@ const getStudentReportPdf = asyncHandler(async (req, res) => {
     });
   }
   if (req.user.role === 'teacher') {
-    const teacher = await Teacher.findOne({ userId: req.user._id }).populate({ path: 'subjectIds', select: 'classIds' });
-    if (!teacher) {
-      return res.status(403).json({ success: false, message: 'Teacher profile not found' });
-    }
-    const classIdSet = new Set();
-    for (const subject of teacher.subjectIds) {
-      for (const cid of subject.classIds) classIdSet.add(cid.toString());
-    }
-    if (!classIdSet.has(student.classId?.toString())) {
+    const allowedClassIds = await getTeacherClassIdSet(req.user._id);
+    if (!allowedClassIds.has(student.classId?.toString())) {
       return res.status(403).json({
         success: false,
         message: 'You do not have permission to download this report',
@@ -364,15 +337,8 @@ const updateReportRemark = asyncHandler(async (req, res) => {
     });
   }
   if (req.user.role === 'teacher') {
-    const teacher = await Teacher.findOne({ userId: req.user._id }).populate({ path: 'subjectIds', select: 'classIds' });
-    if (!teacher) {
-      return res.status(403).json({ success: false, message: 'Teacher profile not found' });
-    }
-    const classIdSet = new Set();
-    for (const subject of teacher.subjectIds) {
-      for (const cid of subject.classIds) classIdSet.add(cid.toString());
-    }
-    if (!classIdSet.has(report.classId?.toString())) {
+    const allowedClassIds = await getTeacherClassIdSet(req.user._id);
+    if (!allowedClassIds.has(report.classId?.toString())) {
       return res.status(403).json({
         success: false,
         message: 'You do not have permission to update remarks for this report',

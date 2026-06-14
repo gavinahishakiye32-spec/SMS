@@ -185,7 +185,7 @@ const deleteComment = asyncHandler(async (req, res) => {
       message: 'You do not have permission to delete this comment',
     });
   }
-  comment.deleteOne();
+  suggestion.comments.pull(comment._id);
   await suggestion.save();
   return res.json({
     success: true,

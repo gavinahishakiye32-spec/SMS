@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const parentSchema = mongoose.Schema(
   {
     fullName: { type: String, required: true },
+    parentType: { type: String, enum: ['Mother', 'Father'] },
     nationalId: { type: String },
     NIN: { type: String },
     phoneNumber: { type: String },

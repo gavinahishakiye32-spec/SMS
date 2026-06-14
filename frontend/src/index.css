@@ -97,4 +97,6 @@ html.dark {
 
   .rounded-xl, .rounded-lg, .rounded, .rounded-full { border-radius: 0 !important; }
   .shadow { box-shadow: none !important; }
+
+  [data-print-hidden] { display: none !important; }
 }

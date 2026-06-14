@@ -2,6 +2,7 @@ const asyncHandler = require('express-async-handler');
 const Teacher = require('../models/Teacher');
 const User = require('../models/User');
 const Subject = require('../models/Subject');
+const Class = require('../models/Class');
 
 const getTeachers = asyncHandler(async (req, res) => {
   const page = parseInt(req.query.page) || 1;
@@ -10,33 +11,30 @@ const getTeachers = asyncHandler(async (req, res) => {
   let query = {};
   if (req.user.role === 'teacher') {
     query.userId = req.user._id;
-  } else {
-    if (req.query.search) {
-      const escaped = req.query.search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      const searchRegex = new RegExp(escaped, 'i');
-      query.$or = [{ firstName: searchRegex }, { lastName: searchRegex }, { email: searchRegex }];
-    }
-    if (req.query.level) {
-      query.level = req.query.level;
-    }
+  } else if (req.query.search) {
+    const escaped = req.query.search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const searchRegex = new RegExp(escaped, 'i');
+    query.$or = [{ firstName: searchRegex }, { lastName: searchRegex }, { email: searchRegex }];
   }
   const total = await Teacher.countDocuments(query);
   const teachers = await Teacher.find(query)
-    .populate({ path: 'subjectIds', select: 'name level classIds', populate: { path: 'classIds', select: 'name' } })
+    .populate({ path: 'subjectIds.subjectId', select: 'name level' })
+    .populate({ path: 'subjectIds.classIds', select: 'name' })
     .populate('userId', 'email')
     .skip(skip)
     .limit(limit)
     .sort({ createdAt: -1 })
     .lean();
+  const data = await resolveTeacherSubjects(teachers);
   return res.json({
     success: true,
-    data: teachers,
+    data,
     pagination: { total, page, limit, totalPages: Math.ceil(total / limit) },
   });
 });
 
 const createTeacher = asyncHandler(async (req, res) => {
-  const { firstName, lastName, gender, NIN, phoneNumber, email, level, subjectIds } = req.body;
+  const { firstName, lastName, gender, NIN, phoneNumber, email, subjectIds } = req.body;
   if (!firstName || !lastName || !email) {
     return res.status(400).json({
       success: false,
@@ -68,14 +66,14 @@ const createTeacher = asyncHandler(async (req, res) => {
       gender,
       phoneNumber,
       email,
-      level: level || undefined,
       subjectIds: subjectIds || [],
       profilePhoto: req.file ? req.file.path : '',
     });
 
-    if (subjectIds?.length) {
+    const extractedIds = extractSubjectIds(subjectIds);
+    if (extractedIds.length) {
       await Subject.updateMany(
-        { _id: { $in: subjectIds } },
+        { _id: { $in: extractedIds } },
         { $addToSet: { teacherIds: teacher._id } }
       );
     }
@@ -100,7 +98,8 @@ const createTeacher = asyncHandler(async (req, res) => {
 
 const getTeacherById = asyncHandler(async (req, res) => {
   const teacher = await Teacher.findById(req.params.id)
-    .populate({ path: 'subjectIds', select: 'name level classIds', populate: { path: 'classIds', select: 'name' } })
+    .populate({ path: 'subjectIds.subjectId', select: 'name level' })
+    .populate({ path: 'subjectIds.classIds', select: 'name' })
     .populate('userId', 'email');
   if (!teacher) {
     return res.status(404).json({
@@ -108,13 +107,14 @@ const getTeacherById = asyncHandler(async (req, res) => {
       message: 'Teacher not found',
     });
   }
-  if (req.user.role === 'teacher' && (teacher.userId?._id || teacher.userId).toString() !== req.user._id.toString()) {
+  if (req.user.role === 'teacher' && (!teacher.userId || (teacher.userId?._id || teacher.userId).toString() !== req.user._id.toString())) {
     return res.status(403).json({
       success: false,
       message: 'You do not have permission to view this teacher profile',
     });
   }
-  return res.json({ success: true, data: teacher });
+  const data = await resolveTeacherSubjects([teacher.toObject()]);
+  return res.json({ success: true, data: data[0] });
 });
 
 const updateTeacher = asyncHandler(async (req, res) => {
@@ -125,17 +125,17 @@ const updateTeacher = asyncHandler(async (req, res) => {
       message: 'Teacher not found',
     });
   }
-  const oldSubjectIds = teacher.subjectIds.map(id => id.toString());
-  const fields = ['firstName', 'lastName', 'gender', 'NIN', 'phoneNumber', 'email', 'level', 'subjectIds'];
+  const oldIds = extractSubjectIds(teacher.subjectIds);
+  const fields = ['firstName', 'lastName', 'gender', 'NIN', 'phoneNumber', 'email', 'subjectIds'];
   fields.forEach((f) => {
     if (req.body[f] !== undefined) teacher[f] = req.body[f];
   });
   if (req.file) teacher.profilePhoto = req.file.path;
   const updated = await teacher.save();
 
-  const newSubjectIds = (req.body.subjectIds || []).map(id => id.toString());
-  const removed = oldSubjectIds.filter(id => !newSubjectIds.includes(id));
-  const added = newSubjectIds.filter(id => !oldSubjectIds.includes(id));
+  const newIds = extractSubjectIds(req.body.subjectIds);
+  const removed = oldIds.filter(id => !newIds.includes(id));
+  const added = newIds.filter(id => !oldIds.includes(id));
 
   if (removed.length) {
     await Subject.updateMany(
@@ -176,7 +176,8 @@ const deleteTeacher = asyncHandler(async (req, res) => {
 
 const getTeacherSubjects = asyncHandler(async (req, res) => {
   const teacher = await Teacher.findById(req.params.id)
-    .populate({ path: 'subjectIds', select: 'name level classIds', populate: { path: 'classIds', select: 'name' } });
+    .populate({ path: 'subjectIds.subjectId', select: 'name level' })
+    .populate({ path: 'subjectIds.classIds', select: 'name' });
   if (!teacher) {
     return res.status(404).json({
       success: false,
@@ -192,8 +193,80 @@ const getTeacherSubjects = asyncHandler(async (req, res) => {
       });
     }
   }
-  return res.json({ success: true, data: teacher.subjectIds });
+  const data = await resolveTeacherSubjects([teacher.toObject()]);
+  return res.json({ success: true, data: data[0]?.subjectIds || [] });
 });
+
+function extractSubjectIds(subjectIds) {
+  if (!subjectIds || !Array.isArray(subjectIds)) return [];
+  if (subjectIds.length === 0) return [];
+  if (typeof subjectIds[0] === 'object' && subjectIds[0] !== null) {
+    return subjectIds.map(s => s.subjectId?.toString?.() || s.subjectId).filter(Boolean);
+  }
+  return subjectIds.map(id => id.toString?.() || id).filter(Boolean);
+}
+
+async function resolveTeacherSubjects(teachers) {
+  const allSubjectIds = new Set();
+  const allClassIds = new Set();
+
+  for (const t of teachers) {
+    for (const s of t.subjectIds || []) {
+      if (s && typeof s === 'object' && s._id && s.name) {
+        allSubjectIds.add(s._id.toString());
+        for (const c of s.classIds || []) allClassIds.add(c._id?.toString() || c.toString());
+      } else {
+        const sid = s?._id?.toString() || s?.toString();
+        if (sid) allSubjectIds.add(sid);
+      }
+    }
+  }
+
+  const [subjectMap, classMap] = await Promise.all([
+    allSubjectIds.size > 0
+      ? Subject.find({ _id: { $in: [...allSubjectIds] } }).select('name level classIds').lean()
+          .then(subjects => {
+            const map = {};
+            for (const s of subjects) map[s._id.toString()] = s;
+            return map;
+          })
+      : Promise.resolve({}),
+    allClassIds.size > 0
+      ? Class.find({ _id: { $in: [...allClassIds] } }).select('name').lean()
+          .then(classes => {
+            const map = {};
+            for (const c of classes) map[c._id.toString()] = c;
+            return map;
+          })
+      : Promise.resolve({}),
+  ]);
+
+  for (const t of teachers) {
+    const resolved = [];
+    for (const s of t.subjectIds || []) {
+      if (s && typeof s === 'object' && s.subjectId) {
+        resolved.push(s);
+      } else if (s && typeof s === 'object' && s._id && s.name) {
+        resolved.push({
+          subjectId: { _id: s._id, name: s.name, level: s.level },
+          classIds: (s.classIds || []).map(c => classMap[c._id?.toString() || c.toString()] || c),
+        });
+      } else {
+        const sid = s?._id?.toString() || s?.toString();
+        const subject = subjectMap[sid];
+        if (subject) {
+          resolved.push({
+            subjectId: { _id: subject._id, name: subject.name, level: subject.level },
+            classIds: (subject.classIds || []).map(c => classMap[c.toString()] || { _id: c, name: c.toString() }),
+          });
+        }
+      }
+    }
+    t.subjectIds = resolved;
+  }
+
+  return teachers;
+}
 
 module.exports = {
   getTeachers,

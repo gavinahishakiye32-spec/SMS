@@ -57,23 +57,23 @@ export default function TermsPage() {
         <h2 className="text-lg font-bold mb-4 text-gray-900 dark:text-white">Add Term</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3">
           <select value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })}
-            className="px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+            className="px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
             <option>Term 1</option><option>Term 2</option><option>Term 3</option>
           </select>
           <select value={form.academicYearId} onChange={(e) => setForm({ ...form, academicYearId: e.target.value })}
-            className="px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+            className="px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
             <option value="">Select Year</option>
             {years ? years.map((y) => <option key={y._id} value={y._id}>{y.year}</option>) : <option disabled>Loading...</option>}
           </select>
           <label className="flex flex-col gap-1">
             <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Start</span>
             <input type="date" value={form.startDate} onChange={(e) => setForm({ ...form, startDate: e.target.value })}
-              className="px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
+              className="px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
           </label>
           <label className="flex flex-col gap-1">
             <span className="text-xs font-medium text-gray-500 dark:text-gray-400">End</span>
             <input type="date" value={form.endDate} onChange={(e) => setForm({ ...form, endDate: e.target.value })}
-              className="px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
+              className="px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
           </label>
           <button onClick={createMutation.mutate} className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-lg self-end">Add Term</button>
         </div>
@@ -84,27 +84,27 @@ export default function TermsPage() {
             <h2 className="text-lg font-bold mb-4 text-gray-900 dark:text-white">Edit Term</h2>
             <div className="space-y-3">
               <select value={editForm.name} onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-                className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+                className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
                 <option>Term 1</option><option>Term 2</option><option>Term 3</option>
               </select>
               <select value={editForm.academicYearId} onChange={(e) => setEditForm({ ...editForm, academicYearId: e.target.value })}
-                className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+                className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
                 <option value="">Select Year</option>
                 {years ? years.map((y) => <option key={y._id} value={y._id}>{y.year}</option>) : <option disabled>Loading...</option>}
               </select>
               <label className="flex flex-col gap-1">
                 <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Start Date</span>
                 <input type="date" value={editForm.startDate} onChange={(e) => setEditForm({ ...editForm, startDate: e.target.value })}
-                  className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
+                  className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
               </label>
               <label className="flex flex-col gap-1">
                 <span className="text-xs font-medium text-gray-500 dark:text-gray-400">End Date</span>
                 <input type="date" value={editForm.endDate} onChange={(e) => setEditForm({ ...editForm, endDate: e.target.value })}
-                  className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
+                  className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
               </label>
               <div className="flex gap-3 pt-2">
                 <button onClick={updateMutation.mutate} className="px-4 py-2 bg-blue-600 text-white rounded-lg">Update</button>
-                <button onClick={() => { setEditing(null); setEditForm({ name: 'Term 1', academicYearId: '', startDate: '', endDate: '' }); }} className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg">Cancel</button>
+                <button onClick={() => { setEditing(null); setEditForm({ name: 'Term 1', academicYearId: '', startDate: '', endDate: '' }); }} className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg dark:hover:bg-gray-600">Cancel</button>
               </div>
             </div>
           </div>

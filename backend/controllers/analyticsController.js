@@ -5,62 +5,92 @@ const Student = require('../models/Student');
 const Class = require('../models/Class');
 const Subject = require('../models/Subject');
 const Teacher = require('../models/Teacher');
+const { getTeacherClassIdSet } = require('../utils/teacherPermissions');
 
 const getSchoolAnalytics = asyncHandler(async (req, res) => {
   const { termId, academicYearId } = req.query;
   let match = {};
   if (termId) match.termId = termId;
   if (academicYearId) match.academicYearId = academicYearId;
-  const reports = await Report.find(match).lean();
-  const totalStudents = await Student.countDocuments(academicYearId ? { academicYearId } : {});
-  const totalTeachers = await Teacher.countDocuments({});
-  const totalClasses = await Class.countDocuments(academicYearId ? { academicYearId } : {});
-  const avgPerformance = reports.length > 0
-    ? reports.reduce((sum, r) => sum + r.overallAverage, 0) / reports.length
-    : 0;
+
+  const [totalStudents, totalTeachers, totalClasses] = await Promise.all([
+    Student.countDocuments(academicYearId ? { academicYearId } : {}),
+    Teacher.countDocuments({}),
+    Class.countDocuments(academicYearId ? { academicYearId } : {}),
+  ]);
+
+  const reports = await Report.find(match)
+    .select('overallAverage grade remarks classId studentId')
+    .lean();
+
+  const rLen = reports.length;
+  if (rLen === 0) {
+    return res.json({
+      success: true,
+      data: {
+        totalStudents, totalTeachers, totalClasses,
+        averagePerformance: 0,
+        gradeDistribution: { A: 0, B: 0, C: 0, D: 0, E: 0, F: 0 },
+        passRate: 0, failRate: 0,
+        bestStudent: null, bestStudentAverage: 0,
+        bestClass: null, bestClassAvg: 0, bestClassPassRate: 0,
+      },
+    });
+  }
+
+  let sumAvg = 0, passed = 0;
   const gradeDistribution = { A: 0, B: 0, C: 0, D: 0, E: 0, F: 0 };
-  reports.forEach((r) => {
-    if (gradeDistribution[r.grade] !== undefined) gradeDistribution[r.grade]++;
-  });
-  const passed = reports.filter((r) => r.remarks === 'Pass').length;
-  const failed = reports.filter((r) => r.remarks === 'Fail').length;
-  const bestReport = reports.length > 0 ? reports.reduce((a, b) => a.overallAverage > b.overallAverage ? a : b) : null;
-  const bestStudent = bestReport ? await Student.findById(bestReport.studentId).select('firstName lastName studentCode').lean() : null;
-  const bestStudentAverage = bestReport ? bestReport.overallAverage : 0;
   const classMap = {};
-  for (const r of reports) {
+  let bestReport = reports[0];
+
+  for (let i = 0; i < rLen; i++) {
+    const r = reports[i];
+    sumAvg += r.overallAverage;
+    if (gradeDistribution[r.grade] !== undefined) gradeDistribution[r.grade]++;
+    if (r.remarks === 'Pass') passed++;
+    if (r.overallAverage > bestReport.overallAverage) bestReport = r;
+
     const key = r.classId.toString();
     if (!classMap[key]) classMap[key] = { total: 0, count: 0, passed: 0 };
     classMap[key].total += r.overallAverage;
     classMap[key].count++;
     if (r.remarks === 'Pass') classMap[key].passed++;
   }
-  let bestClass = null;
-  let bestClassAvg = 0;
-  let bestClassPassRate = 0;
-  const classIds = Object.entries(classMap);
-  if (classIds.length > 0) {
-    const bestEntry = classIds.reduce((a, b) => (a[1].total / a[1].count) > (b[1].total / b[1].count) ? a : b);
-    bestClassAvg = bestEntry[1].total / bestEntry[1].count;
-    bestClassPassRate = Math.round((bestEntry[1].passed / bestEntry[1].count) * 100 * 100) / 100;
-    const classDoc = await Class.findById(bestEntry[0]).select('name').lean();
+
+  const failed = rLen - passed;
+  const avgPerformance = sumAvg / rLen;
+
+  const bestStudent = await Student.findById(bestReport.studentId)
+    .select('firstName lastName studentCode')
+    .lean();
+
+  let bestClass = null, bestClassAvg = 0, bestClassPassRate = 0;
+  const classEntries = Object.entries(classMap);
+  if (classEntries.length > 0) {
+    let bestKey = classEntries[0][0];
+    let bestAvg = classEntries[0][1].total / classEntries[0][1].count;
+    for (let i = 1; i < classEntries.length; i++) {
+      const avg = classEntries[i][1].total / classEntries[i][1].count;
+      if (avg > bestAvg) { bestAvg = avg; bestKey = classEntries[i][0]; }
+    }
+    bestClassAvg = bestAvg;
+    const bestEntry = classMap[bestKey];
+    bestClassPassRate = Math.round((bestEntry.passed / bestEntry.count) * 10000) / 100;
+    const classDoc = await Class.findById(bestKey).select('name').lean();
     if (classDoc) bestClass = classDoc.name;
   }
+
   return res.json({
     success: true,
     data: {
-      totalStudents,
-      totalTeachers,
-      totalClasses,
+      totalStudents, totalTeachers, totalClasses,
       averagePerformance: Math.round(avgPerformance * 100) / 100,
       gradeDistribution,
-      passRate: reports.length > 0 ? Math.round((passed / reports.length) * 100 * 100) / 100 : 0,
-      failRate: reports.length > 0 ? Math.round((failed / reports.length) * 100 * 100) / 100 : 0,
+      passRate: Math.round((passed / rLen) * 10000) / 100,
+      failRate: Math.round((failed / rLen) * 10000) / 100,
       bestStudent,
-      bestStudentAverage,
-      bestClass,
-      bestClassAvg,
-      bestClassPassRate,
+      bestStudentAverage: bestReport.overallAverage,
+      bestClass, bestClassAvg, bestClassPassRate,
     },
   });
 });
@@ -68,15 +98,8 @@ const getSchoolAnalytics = asyncHandler(async (req, res) => {
 const getClassAnalytics = asyncHandler(async (req, res) => {
   const { classId } = req.params;
   if (req.user.role === 'teacher') {
-    const teacher = await Teacher.findOne({ userId: req.user._id }).populate({ path: 'subjectIds', select: 'classIds' });
-    if (!teacher) {
-      return res.status(403).json({ success: false, message: 'Teacher profile not found' });
-    }
-    const classIdSet = new Set();
-    for (const subject of teacher.subjectIds) {
-      for (const cid of subject.classIds) classIdSet.add(cid.toString());
-    }
-    if (!classIdSet.has(classId.toString())) {
+    const allowedClassIds = await getTeacherClassIdSet(req.user._id);
+    if (!allowedClassIds.has(classId.toString())) {
       return res.status(403).json({
         success: false,
         message: 'You do not have permission to view analytics for this class',
@@ -163,9 +186,10 @@ const getTopStudents = asyncHandler(async (req, res) => {
   if (termId) match.termId = termId;
   if (academicYearId) match.academicYearId = academicYearId;
   const reports = await Report.find(match)
+    .select('overallAverage grade studentId')
     .populate('studentId', 'firstName lastName studentCode')
     .sort({ overallAverage: -1 })
-    .limit(parseInt(qLimit) || 10)
+    .limit(Math.min(parseInt(qLimit) || 10, 100))
     .lean();
   return res.json({ success: true, data: reports });
 });
@@ -176,9 +200,10 @@ const getBottomStudents = asyncHandler(async (req, res) => {
   if (termId) match.termId = termId;
   if (academicYearId) match.academicYearId = academicYearId;
   const reports = await Report.find(match)
+    .select('overallAverage grade studentId')
     .populate('studentId', 'firstName lastName studentCode')
     .sort({ overallAverage: 1 })
-    .limit(parseInt(qLimit) || 10);
+    .limit(Math.min(parseInt(qLimit) || 10, 100));
   return res.json({ success: true, data: reports });
 });
 

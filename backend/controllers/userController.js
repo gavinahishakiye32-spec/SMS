@@ -140,8 +140,16 @@ const deleteUser = asyncHandler(async (req, res) => {
       message: 'You do not have permission to delete this user',
     });
   }
-  await Student.deleteOne({ userId: user._id });
-  await Teacher.deleteOne({ userId: user._id });
+  if (user.role === 'student') {
+    const student = await Student.findOne({ userId: user._id });
+    if (student) {
+      await Mark.deleteMany({ studentId: student._id });
+      await Report.deleteMany({ studentId: student._id });
+      await Student.deleteOne({ _id: student._id });
+    }
+  } else if (user.role === 'teacher') {
+    await Teacher.deleteOne({ userId: user._id });
+  }
   await User.deleteOne({ _id: user._id });
   return res.json({
     success: true,

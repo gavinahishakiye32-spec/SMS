@@ -47,7 +47,7 @@ export default function SchoolSettingsPage() {
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">School Name</label>
             <input value={schoolName || settings?.schoolName || ''} onChange={(e) => setSchoolName(e.target.value)}
-              className="w-full px-4 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+              className="w-full px-4 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
               placeholder="Enter school name" required />
           </div>
           <div>

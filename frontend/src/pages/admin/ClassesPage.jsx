@@ -53,7 +53,7 @@ export default function ClassesPage() {
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Classes</h1>
         <div className="flex flex-wrap gap-3 w-full sm:w-auto">
           <select value={filterLevel} onChange={(e) => setFilterLevel(e.target.value)}
-            className="flex-1 sm:flex-none px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+            className="flex-1 sm:flex-none px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
             <option value="">All Levels</option>
             <option value="O-Level">O-Level</option>
             <option value="A-Level">A-Level</option>
@@ -67,22 +67,22 @@ export default function ClassesPage() {
             <h2 className="text-lg font-bold mb-4 text-gray-900 dark:text-white">{editing ? 'Edit Class' : 'Add Class'}</h2>
             <form onSubmit={handleSubmit} className="space-y-3">
               <select value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })}
-                className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+                className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
                 <option value="S1">S1</option><option value="S2">S2</option><option value="S3">S3</option>
                 <option value="S4">S4</option><option value="S5">S5</option><option value="S6">S6</option>
               </select>
               <select value={form.level} onChange={(e) => setForm({ ...form, level: e.target.value })}
-                className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+                className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
                 <option value="O-Level">O-Level</option><option value="A-Level">A-Level</option>
               </select>
               <select value={form.academicYearId} onChange={(e) => setForm({ ...form, academicYearId: e.target.value })}
-                className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+                className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
                 <option value="">Select Year</option>
                 {years ? years.map((y) => <option key={y._id} value={y._id}>{y.year}{y.isActive ? ' (Active)' : ''}</option>) : <option disabled>Loading...</option>}
               </select>
               <div className="flex gap-3">
                 <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg">{editing ? 'Update' : 'Create'}</button>
-                <button type="button" onClick={() => { setShowForm(false); setEditing(null); }} className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg">Cancel</button>
+                <button type="button" onClick={() => { setShowForm(false); setEditing(null); }} className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg dark:hover:bg-gray-600">Cancel</button>
               </div>
             </form>
           </div>

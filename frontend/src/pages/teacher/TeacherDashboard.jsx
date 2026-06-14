@@ -39,11 +39,11 @@ export default function TeacherDashboard() {
         <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Assigned Subjects</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {subjects?.map((s) => (
-            <div key={s._id} className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-              <p className="font-semibold text-gray-900 dark:text-white">{s.name}</p>
-              <p className="text-sm text-gray-500 dark:text-gray-400">{s.level}</p>
+            <div key={s.subjectId?._id || s._id} className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+              <p className="font-semibold text-gray-900 dark:text-white">{s.subjectId?.name || s.name}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">{s.subjectId?.level || s.level}</p>
               <div className="mt-1 flex flex-wrap gap-1">
-                {s.classIds?.map((c) => (
+                {(s.classIds || []).map((c) => (
                   <span key={c._id} className="text-xs bg-white/50 dark:bg-gray-800/50 text-gray-600 dark:text-gray-400 px-2 py-0.5 rounded">{c.name}</span>
                 ))}
               </div>

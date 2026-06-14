@@ -6,7 +6,7 @@ export default function ReportsPage() {
   const [studentId, setStudentId] = useState('');
   const [classId, setClassId] = useState('');
   const [studentTermId, setStudentTermId] = useState('');
-  const [classTermId] = useState('');
+  const [classTermId, setClassTermId] = useState('');
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -78,19 +78,19 @@ export default function ReportsPage() {
           <div className="flex flex-col sm:flex-row flex-wrap gap-2 mb-2">
             <input placeholder="Search by name, student ID, or code..."
               value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full sm:flex-1 px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
+              className="w-full sm:flex-1 px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
             <select value={searchClassId} onChange={(e) => setSearchClassId(e.target.value)}
-              className="w-full sm:w-auto px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+              className="w-full sm:w-auto px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
               <option value="">All Classes</option>
               {classes ? classes.map((c) => <option key={c._id} value={c._id}>{c.name}</option>) : <option disabled>Loading...</option>}
             </select>
             <select value={searchTermId} onChange={(e) => setSearchTermId(e.target.value)}
-              className="w-full sm:w-auto px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+              className="w-full sm:w-auto px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
               <option value="">Latest Term</option>
               {terms ? terms.map((t) => <option key={t._id} value={t._id}>{t.name}</option>) : <option disabled>Loading...</option>}
             </select>
             <select value={searchAcademicYearId} onChange={(e) => setSearchAcademicYearId(e.target.value)}
-              className="w-full sm:w-auto px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+              className="w-full sm:w-auto px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
               <option value="">All Years</option>
               {academicYears ? academicYears.map((y) => <option key={y._id} value={y._id}>{y.year}</option>) : <option disabled>Loading...</option>}
             </select>
@@ -103,9 +103,9 @@ export default function ReportsPage() {
             <h2 className="text-lg font-bold mb-3 text-gray-900 dark:text-white">Quick Student Lookup</h2>
             <div className="flex flex-col sm:flex-row flex-wrap gap-2 mb-2">
               <input placeholder="Student ID" value={studentId} onChange={(e) => setStudentId(e.target.value)}
-                className="w-full sm:flex-1 px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
+                className="w-full sm:flex-1 px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
               <select value={studentTermId} onChange={(e) => setStudentTermId(e.target.value)}
-                className="w-full sm:w-auto px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+                className="w-full sm:w-auto px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
                 <option value="">Latest</option>
                 {terms ? terms.map((t) => <option key={t._id} value={t._id}>{t.name}</option>) : <option disabled>Loading...</option>}
               </select>
@@ -114,11 +114,16 @@ export default function ReportsPage() {
           </div>
           <div className="bg-white dark:bg-gray-900 rounded-xl shadow p-4 sm:p-5">
             <h2 className="text-lg font-bold mb-3 text-gray-900 dark:text-white">Class Report</h2>
-            <div className="flex flex-col sm:flex-row gap-2 mb-2">
+            <div className="flex flex-col sm:flex-row flex-wrap gap-2 mb-2">
               <select value={classId} onChange={(e) => setClassId(e.target.value)}
-                className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+                className="w-full sm:flex-1 px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
                 <option value="">Select Class</option>
                 {classes ? classes.map((c) => <option key={c._id} value={c._id}>{c.name}</option>) : <option disabled>Loading...</option>}
+              </select>
+              <select value={classTermId} onChange={(e) => setClassTermId(e.target.value)}
+                className="w-full sm:w-auto px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+                <option value="">Latest Term</option>
+                {terms ? terms.map((t) => <option key={t._id} value={t._id}>{t.name}</option>) : <option disabled>Loading...</option>}
               </select>
             </div>
             <button onClick={searchClass} className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-lg">View Rankings</button>
@@ -138,9 +143,9 @@ export default function ReportsPage() {
                   <div key={item.student._id} className="border rounded-lg p-3 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer"
                     onClick={() => {
                       if (item.reports.length > 0) {
-                        loadStudentReport(item.student._id, item.reports[0].termId?._id);
+                        loadStudentReport(item.student?._id, item.reports[0].termId?._id);
                       } else {
-                        loadStudentReport(item.student._id, searchTermId);
+                        loadStudentReport(item.student?._id, searchTermId);
                       }
                     }}>
                     <div className="flex justify-between items-center">
@@ -155,9 +160,12 @@ export default function ReportsPage() {
                       <div className="text-right">
                         <span className="text-sm text-gray-500 dark:text-gray-400">{item.reports.length} report(s)</span>
                         {item.reports.length > 0 && (
-                          <p className="text-sm font-medium text-blue-600">
-                            Avg: {item.reports[0].overallAverage?.toFixed(1)} | {item.reports[0].grade}
-                          </p>
+                          <>
+                            <p className="text-xs text-gray-400 dark:text-gray-500">{item.reports[0].academicYearId?.year} | {item.reports[0].termId?.name}</p>
+                            <p className="text-sm font-medium text-blue-600">
+                              Avg: {item.reports[0].overallAverage?.toFixed(1)} | {item.reports[0].grade}
+                            </p>
+                          </>
                         )}
                       </div>
                     </div>
@@ -192,7 +200,7 @@ export default function ReportsPage() {
             </div>
           </div>
           <h3 className="font-bold text-lg mb-2 text-gray-900 dark:text-white">Academic Performance</h3>
-          <table className="w-full text-sm mb-4 border">
+          <div className="overflow-x-auto"><table className="w-full text-sm mb-4 border">
             <thead><tr className="bg-gray-50 dark:bg-gray-800"><th className="border p-2 text-left text-gray-700 dark:text-gray-300">Subject</th><th className="border p-2 text-gray-700 dark:text-gray-300">Mid-Term/100</th><th className="border p-2 text-gray-700 dark:text-gray-300">End-Term/100</th><th className="border p-2 text-gray-700 dark:text-gray-300">Average</th><th className="border p-2 text-gray-700 dark:text-gray-300">Grade</th></tr></thead>
             <tbody>
               {report.marks?.map((m) => (
@@ -209,7 +217,7 @@ export default function ReportsPage() {
                 </tr>
               ))}
             </tbody>
-          </table>
+          </table></div>
           <div className="grid grid-cols-2 gap-4 text-sm text-gray-700 dark:text-gray-300">
             <div>
               <p><strong className="text-gray-900 dark:text-white">Total Marks:</strong> <span className="text-lg font-bold text-blue-600">{((report.report.midtermTotal || 0) + (report.report.endTermTotal || 0)).toFixed(0)}</span></p>
@@ -247,19 +255,20 @@ export default function ReportsPage() {
             </div>
           </div>
 
-          <div className="flex justify-end mt-4 print:hidden">
-            <button onClick={() => window.print()} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-              Print Report Card
-            </button>
-          </div>
-
         </div>
       )}
 
       {report && report.classReport && (
         <div className="bg-white dark:bg-gray-900 rounded-xl shadow p-5 no-print">
-          <h2 className="text-lg font-bold mb-4 text-gray-900 dark:text-white">Class Rankings</h2>
-          <table className="w-full text-sm">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-bold text-gray-900 dark:text-white">Class Rankings</h2>
+            {report.report?.academicYearId?.year && (
+              <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">
+                {report.report.academicYearId.year} | {report.report.termId?.name || ''}
+              </span>
+            )}
+          </div>
+          <div className="overflow-x-auto"><table className="w-full text-sm">
             <thead className="bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300">
               <tr><th scope="col" className="p-2 text-left">Rank</th><th scope="col" className="p-2 text-left">Student</th><th scope="col" className="p-2">Average</th><th scope="col" className="p-2">Grade</th><th scope="col" className="p-2">Remarks</th></tr>
             </thead>
@@ -282,7 +291,7 @@ export default function ReportsPage() {
                 </tr>
               ))}
             </tbody>
-          </table>
+          </table></div>
         </div>
       )}
     </div>

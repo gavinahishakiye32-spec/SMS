@@ -9,8 +9,10 @@ const teacherSchema = mongoose.Schema(
     NIN: { type: String },
     phoneNumber: { type: String },
     email: { type: String },
-    level: { type: String, enum: ['O-Level', 'A-Level'] },
-    subjectIds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Subject' }],
+    subjectIds: [{
+      subjectId: { type: mongoose.Schema.Types.ObjectId, ref: 'Subject' },
+      classIds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Class' }],
+    }],
     profilePhoto: { type: String, default: '' },
   },
   { timestamps: true }

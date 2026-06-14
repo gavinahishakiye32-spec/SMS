@@ -94,12 +94,12 @@ export default function SuggestionsPage() {
           <h2 className="text-lg font-bold mb-4 text-gray-900 dark:text-white">New Suggestion</h2>
           <div className="space-y-3">
             <input placeholder="Title" value={title} onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
+              className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
             <textarea placeholder="Body" value={body} onChange={(e) => setBody(e.target.value)} rows={4}
-              className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
+              className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
             <div className="flex gap-3">
               <button onClick={createMutation.mutate} className="px-4 py-2 bg-blue-600 text-white rounded-lg">Submit</button>
-              <button onClick={() => setShowForm(false)} className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg">Cancel</button>
+              <button onClick={() => setShowForm(false)} className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg dark:hover:bg-gray-600">Cancel</button>
             </div>
           </div>
         </div>
@@ -110,12 +110,12 @@ export default function SuggestionsPage() {
             {editingSuggestion === s._id ? (
               <div className="space-y-3">
                 <input value={editTitle} onChange={(e) => setEditTitle(e.target.value)}
-                  className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
+                  className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
                 <textarea value={editBody} onChange={(e) => setEditBody(e.target.value)} rows={4}
-                  className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
+                  className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
                 <div className="flex gap-3">
                   <button onClick={() => updateMutation.mutate({ id: s._id, title: editTitle, body: editBody })} className="px-4 py-2 bg-blue-600 text-white rounded-lg">Save</button>
-                  <button onClick={() => setEditingSuggestion(null)} className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg">Cancel</button>
+                  <button onClick={() => setEditingSuggestion(null)} className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg dark:hover:bg-gray-600">Cancel</button>
                 </div>
               </div>
             ) : (
@@ -154,9 +154,9 @@ export default function SuggestionsPage() {
                         {editingComment === c._id ? (
                           <div className="flex gap-2">
                             <input value={editCommentText} onChange={(e) => setEditCommentText(e.target.value)}
-                              className="flex-1 px-2 py-1 border rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm" />
+                              className="flex-1 px-2 py-1 border dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm" />
                             <button onClick={() => updateCommentMutation.mutate({ id: s._id, commentId: c._id, text: editCommentText })} className="px-2 py-1 bg-blue-600 text-white rounded text-xs">Save</button>
-                            <button onClick={() => setEditingComment(null)} className="px-2 py-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded text-xs">Cancel</button>
+                            <button onClick={() => setEditingComment(null)} className="px-2 py-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded text-xs dark:hover:bg-gray-600">Cancel</button>
                           </div>
                         ) : (
                           <><strong>{c.userName}:</strong> {c.text}</>
@@ -173,7 +173,7 @@ export default function SuggestionsPage() {
                 </div>
                 <div className="flex gap-2">
                   <input value={commentText} onChange={(e) => setCommentText(e.target.value)}
-                    placeholder="Write a comment..." className="flex-1 px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
+                    placeholder="Write a comment..." className="flex-1 px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
                   <button onClick={() => commentMutation.mutate(s._id)} className="px-3 py-2 bg-blue-600 text-white rounded-lg">Post</button>
                 </div>
               </div>
