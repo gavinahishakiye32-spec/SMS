@@ -34,6 +34,22 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 connectDB();
 connectCloudinary();
 
+const seedAdmins = async () => {
+  const User = require('./models/User');
+  const admins = [
+    { name: 'Super Admin', email: 'super@admin.com', password: 'admin123', role: 'superadmin' },
+    { name: 'School Admin', email: 'school@admin.com', password: 'admin123', role: 'schooladmin' },
+  ];
+  for (const admin of admins) {
+    const exists = await User.findOne({ email: admin.email });
+    if (!exists) {
+      await User.create(admin);
+    }
+  }
+};
+
+seedAdmins().catch(err => console.error('Auto-seed error:', err.message));
+
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/users', require('./routes/userRoutes'));
 app.use('/api/students', require('./routes/studentRoutes'));
@@ -52,17 +68,7 @@ app.use('/api/settings', require('./routes/settingRoutes'));
 
 app.get('/run-seed', async (req, res) => {
   try {
-    const User = require('./models/User');
-    const admins = [
-      { name: 'Super Admin', email: 'super@admin.com', password: 'admin123', role: 'superadmin' },
-      { name: 'School Admin', email: 'school@admin.com', password: 'admin123', role: 'schooladmin' },
-    ];
-    for (const admin of admins) {
-      const exists = await User.findOne({ email: admin.email });
-      if (!exists) {
-        await User.create(admin);
-      }
-    }
+    await seedAdmins();
     res.json({ message: 'Database seeded successfully!' });
   } catch (err) {
     res.status(500).json({ message: 'Seed failed', error: err.message });
