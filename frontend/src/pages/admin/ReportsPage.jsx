@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { Printer } from 'lucide-react';
 import API from '../../services/api';
 
 export default function ReportsPage() {
@@ -255,6 +256,11 @@ export default function ReportsPage() {
             </div>
           </div>
 
+          <div className="flex justify-end mt-4 no-print">
+            <button onClick={() => window.print()} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2 cursor-pointer">
+              <Printer size={18} /> Print Report Card
+            </button>
+          </div>
         </div>
       )}
 
