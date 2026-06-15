@@ -34,12 +34,23 @@ const getTeachers = asyncHandler(async (req, res) => {
 });
 
 function parseSubjectIds(value) {
-  if (typeof value !== 'string') return value;
-  try { return JSON.parse(value); } catch {}
-  try { return JSON.parse(value.replace(/'/g, '"')); } catch {}
-  try { return JSON.parse(value.replace(/(\w+)\s*:/g, '"$1":')); } catch {}
-  try { return JSON.parse(value.replace(/'/g, '"').replace(/(\w+)\s*:/g, '"$1":')); } catch {}
-  return [];
+  if (typeof value === 'string') {
+    try { return JSON.parse(value); } catch {}
+    try { return JSON.parse(value.replace(/'/g, '"')); } catch {}
+    try { return JSON.parse(value.replace(/(\w+)\s*:/g, '"$1":')); } catch {}
+    try { return JSON.parse(value.replace(/'/g, '"').replace(/(\w+)\s*:/g, '"$1":')); } catch {}
+    return [];
+  }
+  if (Array.isArray(value)) {
+    return value.flatMap(item => {
+      if (typeof item === 'string') {
+        const parsed = parseSubjectIds(item);
+        return Array.isArray(parsed) ? parsed : [parsed];
+      }
+      return item;
+    });
+  }
+  return value;
 }
 
 const createTeacher = asyncHandler(async (req, res) => {
@@ -135,7 +146,7 @@ const updateTeacher = asyncHandler(async (req, res) => {
       message: 'Teacher not found',
     });
   }
-  if (typeof req.body.subjectIds === 'string') req.body.subjectIds = parseSubjectIds(req.body.subjectIds);
+  if (req.body.subjectIds) req.body.subjectIds = parseSubjectIds(req.body.subjectIds);
   const oldIds = extractSubjectIds(teacher.subjectIds);
   const fields = ['firstName', 'lastName', 'gender', 'NIN', 'phoneNumber', 'email', 'subjectIds'];
   fields.forEach((f) => {
