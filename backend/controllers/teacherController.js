@@ -33,8 +33,18 @@ const getTeachers = asyncHandler(async (req, res) => {
   });
 });
 
+function parseSubjectIds(value) {
+  if (typeof value !== 'string') return value;
+  try { return JSON.parse(value); } catch {}
+  try { return JSON.parse(value.replace(/'/g, '"')); } catch {}
+  try { return JSON.parse(value.replace(/(\w+)\s*:/g, '"$1":')); } catch {}
+  try { return JSON.parse(value.replace(/'/g, '"').replace(/(\w+)\s*:/g, '"$1":')); } catch {}
+  return [];
+}
+
 const createTeacher = asyncHandler(async (req, res) => {
-  const { firstName, lastName, gender, NIN, phoneNumber, email, subjectIds } = req.body;
+  let { firstName, lastName, gender, NIN, phoneNumber, email, subjectIds } = req.body;
+  subjectIds = parseSubjectIds(subjectIds);
   if (!firstName || !lastName || !email) {
     return res.status(400).json({
       success: false,
@@ -125,6 +135,7 @@ const updateTeacher = asyncHandler(async (req, res) => {
       message: 'Teacher not found',
     });
   }
+  if (typeof req.body.subjectIds === 'string') req.body.subjectIds = parseSubjectIds(req.body.subjectIds);
   const oldIds = extractSubjectIds(teacher.subjectIds);
   const fields = ['firstName', 'lastName', 'gender', 'NIN', 'phoneNumber', 'email', 'subjectIds'];
   fields.forEach((f) => {
