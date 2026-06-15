@@ -258,9 +258,10 @@ const getStudentMarks = asyncHandler(async (req, res) => {
       });
     }
   }
-  const { termId } = req.query;
+  const { termId, academicYearId } = req.query;
   let query = { studentId };
   if (termId) query.termId = termId;
+  if (academicYearId) query.academicYearId = academicYearId;
   const marks = await Mark.find(query)
     .populate('subjectId', 'name level')
     .populate('termId', 'name')

@@ -84,17 +84,18 @@ const deleteAcademicYear = asyncHandler(async (req, res) => {
       message: 'Academic year not found',
     });
   }
-  const [markCount, reportCount, termCount, studentCount] = await Promise.all([
+  const [markCount, reportCount, termCount, studentCount, classCount] = await Promise.all([
     Mark.countDocuments({ academicYearId: year._id }),
     Report.countDocuments({ academicYearId: year._id }),
     Term.countDocuments({ academicYearId: year._id }),
     Student.countDocuments({ academicYearId: year._id }),
+    Class.countDocuments({ academicYearId: year._id }),
   ]);
-  const total = markCount + reportCount + termCount;
+  const total = markCount + reportCount + termCount + classCount;
   if (total > 0 && req.query.confirm !== 'true') {
     return res.status(400).json({
       success: false,
-      message: `This will permanently delete ${total} record(s) (${markCount} marks, ${reportCount} reports, ${termCount} terms) and unlink ${studentCount} student(s) and all classes. Set ?confirm=true to proceed.`,
+      message: `This will permanently delete ${total} record(s) (${markCount} marks, ${reportCount} reports, ${termCount} terms, ${classCount} classes) and unlink ${studentCount} student(s). Set ?confirm=true to proceed.`,
     });
   }
   await Mark.deleteMany({ academicYearId: year._id });

@@ -19,6 +19,7 @@ export default function StudentsPage() {
   const [form, setForm] = useState({
     firstName: '', lastName: '', gender: 'Male', dateOfBirth: '', NIN: '',
     address: '', phoneNumber: '', email: '', classId: '', sectionId: '',
+    academicYearId: '',
   });
   const queryClient = useQueryClient();
 
@@ -83,7 +84,7 @@ export default function StudentsPage() {
       }
       setShowForm(false);
       setEditing(null);
-      setForm({ firstName: '', lastName: '', gender: 'Male', dateOfBirth: '', NIN: '', address: '', phoneNumber: '', email: '', classId: '', sectionId: '' });
+      setForm({ firstName: '', lastName: '', gender: 'Male', dateOfBirth: '', NIN: '', address: '', phoneNumber: '', email: '', classId: '', sectionId: '', academicYearId: '' });
       queryClient.invalidateQueries({ queryKey: ['students'] });
       queryClient.invalidateQueries({ queryKey: ['analytics-school'] });
     } catch (err) {
@@ -99,6 +100,7 @@ export default function StudentsPage() {
       email: student.userId?.email || '',
       classId: student.classId?._id || '',
       sectionId: student.sectionId?._id || '',
+      academicYearId: student.academicYearId?._id || '',
     });
     setEditing(student._id);
     setShowForm(true);
@@ -178,6 +180,11 @@ export default function StudentsPage() {
                 className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
                 <option value="">Select Class</option>
                 {classes ? classes.map((c) => <option key={c._id} value={c._id}>{c.name} ({c.level})</option>) : <option disabled>Loading...</option>}
+              </select>
+              <select value={form.academicYearId} onChange={(e) => setForm({ ...form, academicYearId: e.target.value })}
+                className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+                <option value="">Select Academic Year (auto if empty)</option>
+                {academicYears ? academicYears.map((y) => <option key={y._id} value={y._id}>{y.year}</option>) : <option disabled>Loading...</option>}
               </select>
               <select value={form.sectionId} onChange={(e) => setForm({ ...form, sectionId: e.target.value })}
                 className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">

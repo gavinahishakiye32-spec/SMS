@@ -33,10 +33,17 @@ const getClasses = asyncHandler(async (req, res) => {
 
 const createClass = asyncHandler(async (req, res) => {
   const { name, level, academicYearId } = req.body;
-  if (!name || !level) {
+  if (!name) {
     return res.status(400).json({
       success: false,
-      message: 'Please provide name and level',
+      message: 'Please provide name',
+    });
+  }
+  const validNames = ['S1', 'S2', 'S3', 'S4', 'S5', 'S6'];
+  if (!validNames.includes(name)) {
+    return res.status(400).json({
+      success: false,
+      message: 'Invalid class name. Must be S1, S2, S3, S4, S5, or S6',
     });
   }
   const exists = await Class.findOne({ name, academicYearId });

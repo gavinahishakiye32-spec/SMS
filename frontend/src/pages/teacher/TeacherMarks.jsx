@@ -12,6 +12,7 @@ export default function TeacherMarks() {
   const [subjectId, setSubjectId] = useState('');
   const [classId, setClassId] = useState('');
   const [termId, setTermId] = useState('');
+  const [academicYearId, setAcademicYearId] = useState('');
   const [marks, setMarks] = useState({});
   const [saving, setSaving] = useState(false);
   const initialized = useRef(false);
@@ -48,28 +49,46 @@ export default function TeacherMarks() {
     queryFn: () => API.get('/terms').then((r) => r.data.data),
   });
 
-  const { data: activeYear } = useQuery({
-    queryKey: ['active-academic-year'],
-    queryFn: () => API.get('/academic-years?isActive=true').then((r) => r.data.data[0]),
+  const { data: academicYears } = useQuery({
+    queryKey: ['academic-years'],
+    queryFn: () => API.get('/academic-years').then((r) => r.data.data),
   });
 
+  const activeYear = academicYears?.find((y) => y.isActive);
+
   const { data: students, isLoading: studentsLoading } = useQuery({
-    queryKey: ['students-for-marks', classId],
-    queryFn: () => API.get(`/students?classId=${classId}&limit=100`).then((r) => r.data.data),
+    queryKey: ['students-for-marks', classId, academicYearId],
+    queryFn: () => {
+      let url = `/students?classId=${classId}&limit=100`;
+      if (academicYearId) url += `&academicYearId=${academicYearId}`;
+      return API.get(url).then((r) => r.data.data);
+    },
     enabled: !!classId,
   });
 
   const { data: existingMarks, isLoading: existingLoading } = useQuery({
-    queryKey: ['existing-marks', classId, subjectId, termId],
-    queryFn: () => API.get(`/marks?classId=${classId}&subjectId=${subjectId}&termId=${termId}&limit=100`).then((r) => r.data.data),
+    queryKey: ['existing-marks', classId, subjectId, termId, academicYearId],
+    queryFn: () => {
+      let url = `/marks?classId=${classId}&subjectId=${subjectId}&termId=${termId}&limit=100`;
+      if (academicYearId) url += `&academicYearId=${academicYearId}`;
+      return API.get(url).then((r) => r.data.data);
+    },
     enabled: !!classId && !!subjectId && !!termId,
   });
 
-  const selectedTerm = terms?.find((t) => t._id === termId);
+  const filteredTerms = useMemo(() => {
+    if (!terms) return [];
+    if (!academicYearId) return terms;
+    return terms.filter((t) => {
+      const ty = t.academicYearId?._id || t.academicYearId;
+      return ty === academicYearId;
+    });
+  }, [terms, academicYearId]);
+
+  const selectedTerm = filteredTerms?.find((t) => t._id === termId);
 
   useEffect(() => {
     initialized.current = false;
-    setMarks({});
   }, [classId, subjectId, termId]);
 
   useEffect(() => {
@@ -99,8 +118,8 @@ export default function TeacherMarks() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      const academicYearId = selectedTerm?.academicYearId?._id || selectedTerm?.academicYearId || activeYear?._id;
-      if (!academicYearId) {
+      const year = academicYearId || selectedTerm?.academicYearId?._id || selectedTerm?.academicYearId || activeYear?._id;
+      if (!year) {
         addToast('Could not determine academic year. Please check term settings.', 'error');
         setSaving(false);
         return;
@@ -117,7 +136,7 @@ export default function TeacherMarks() {
           subjectId,
           classId,
           termId,
-          academicYearId,
+          academicYearId: year,
         };
         if (m.midterm !== null) body.midtermMarks = m.midterm;
         if (m.endterm !== null) body.endTermMarks = m.endterm;
@@ -141,7 +160,7 @@ export default function TeacherMarks() {
       } else {
         addToast(`Saved ${results.length - failures.length}/${results.length} marks. ${failures.length} failed.`, 'warning');
       }
-      queryClient.invalidateQueries({ queryKey: ['existing-marks', classId, subjectId, termId] });
+      queryClient.invalidateQueries({ queryKey: ['existing-marks', classId, subjectId, termId, academicYearId] });
     } catch (err) {
       addToast(err.response?.data?.message || 'Error saving marks', 'error');
     } finally {
@@ -175,10 +194,15 @@ export default function TeacherMarks() {
           <option value="">Select Class</option>
           {classesLoading ? <option disabled>Loading...</option> : filteredClasses?.map((c) => <option key={c._id} value={c._id}>{c.name}</option>)}
         </select>
+        <select value={academicYearId} onChange={(e) => { setAcademicYearId(e.target.value); setTermId(''); }}
+          className="w-full sm:w-auto px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+          <option value="">All Years</option>
+          {academicYears ? academicYears.map((y) => <option key={y._id} value={y._id}>{y.year}</option>) : <option disabled>Loading...</option>}
+        </select>
         <select value={termId} onChange={(e) => setTermId(e.target.value)}
           className="w-full sm:w-auto px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
           <option value="">Select Term</option>
-          {terms ? terms.map((t) => <option key={t._id} value={t._id}>{t.name}</option>) : <option disabled>Loading...</option>}
+          {terms ? filteredTerms.map((t) => <option key={t._id} value={t._id}>{t.name}</option>) : <option disabled>Loading...</option>}
         </select>
       </div>
       {students && subjectId && termId ? (

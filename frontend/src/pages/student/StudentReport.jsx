@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import API from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
@@ -6,6 +6,7 @@ import { useAuth } from '../../context/AuthContext';
 export default function StudentReport() {
   const { user } = useAuth();
   const [termId, setTermId] = useState('');
+  const [academicYearId, setAcademicYearId] = useState('');
 
   const { data: profile } = useQuery({
     queryKey: ['student-profile-report', user?._id],
@@ -18,14 +19,34 @@ export default function StudentReport() {
     queryFn: () => API.get('/terms').then((r) => r.data.data),
   });
 
+  const { data: academicYears } = useQuery({
+    queryKey: ['academic-years'],
+    queryFn: () => API.get('/academic-years').then((r) => r.data.data),
+  });
+
+  const filteredTerms = useMemo(() => {
+    if (!terms) return [];
+    if (!academicYearId) return terms;
+    return terms.filter((t) => {
+      const ty = t.academicYearId?._id || t.academicYearId;
+      return ty === academicYearId;
+    });
+  }, [terms, academicYearId]);
+
   const { data: settings } = useQuery({
     queryKey: ['school-settings'],
     queryFn: () => API.get('/settings').then((r) => r.data.data),
   });
 
   const { data: report } = useQuery({
-    queryKey: ['student-report-full', profile?._id, termId],
-    queryFn: () => API.get(`/reports/student/${profile._id}${termId ? `?termId=${termId}` : ''}`).then((r) => r.data.data),
+    queryKey: ['student-report-full', profile?._id, termId, academicYearId],
+    queryFn: () => {
+      const params = new URLSearchParams();
+      if (termId) params.set('termId', termId);
+      if (academicYearId) params.set('academicYearId', academicYearId);
+      const qs = params.toString();
+      return API.get(`/reports/student/${profile._id}${qs ? `?${qs}` : ''}`).then((r) => r.data.data);
+    },
     enabled: !!profile?._id,
   });
 
@@ -42,10 +63,15 @@ export default function StudentReport() {
         </div>
       </div>
       <div className="flex flex-col sm:flex-row flex-wrap gap-3 no-print">
+        <select value={academicYearId} onChange={(e) => { setAcademicYearId(e.target.value); setTermId(''); }}
+          className="w-full sm:w-auto px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+          <option value="">All Years</option>
+          {academicYears?.map((y) => <option key={y._id} value={y._id}>{y.year}</option>)}
+        </select>
         <select value={termId} onChange={(e) => setTermId(e.target.value)}
           className="w-full sm:w-auto px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
           <option value="">Latest Report</option>
-          {terms?.map((t) => <option key={t._id} value={t._id}>{t.name}</option>)}
+          {filteredTerms?.map((t) => <option key={t._id} value={t._id}>{t.name}</option>)}
         </select>
       </div>
       {report?.report ? (
