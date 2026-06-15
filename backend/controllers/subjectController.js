@@ -69,7 +69,21 @@ const getSubjects = asyncHandler(async (req, res) => {
   }
 
   for (const s of subjects) {
-    s.teachers = teacherSubjectMap[s._id.toString()] || [];
+    const sid = s._id.toString();
+    const mapped = teacherSubjectMap[sid] || [];
+    const mappedIds = new Set(mapped.map(t => t._id.toString()));
+    for (const t of (s.teacherIds || [])) {
+      const tid = t._id?.toString() || t.toString();
+      if (!mappedIds.has(tid)) {
+        mapped.push({
+          _id: tid,
+          firstName: t.firstName || '',
+          lastName: t.lastName || '',
+          classIds: [],
+        });
+      }
+    }
+    s.teachers = mapped;
   }
 
   return res.json({
@@ -79,8 +93,18 @@ const getSubjects = asyncHandler(async (req, res) => {
   });
 });
 
+function parseArrayField(value) {
+  if (typeof value !== 'string') return value;
+  try { return JSON.parse(value); } catch {}
+  try { return JSON.parse(value.replace(/'/g, '"')); } catch {}
+  try { return JSON.parse(value.replace(/(\w+)\s*:/g, '"$1":')); } catch {}
+  try { return JSON.parse(value.replace(/'/g, '"').replace(/(\w+)\s*:/g, '"$1":')); } catch {}
+  return [];
+}
+
 const createSubject = asyncHandler(async (req, res) => {
-  const { name, level, classIds } = req.body;
+  let { name, level, classIds } = req.body;
+  classIds = parseArrayField(classIds);
   if (!name || !level) {
     return res.status(400).json({
       success: false,
@@ -151,12 +175,12 @@ const updateSubject = asyncHandler(async (req, res) => {
   const oldTeacherIds = subject.teacherIds.map(id => id.toString());
   if (req.body.name !== undefined) subject.name = req.body.name;
   if (req.body.level !== undefined) subject.level = req.body.level;
-  if (req.body.classIds !== undefined) subject.classIds = req.body.classIds;
-  if (req.body.teacherIds !== undefined) subject.teacherIds = req.body.teacherIds;
+  if (req.body.classIds !== undefined) subject.classIds = parseArrayField(req.body.classIds);
+  if (req.body.teacherIds !== undefined) subject.teacherIds = parseArrayField(req.body.teacherIds);
   const updated = await subject.save();
 
   if (req.body.teacherIds !== undefined) {
-    const newTeacherIds = req.body.teacherIds.map(id => id.toString());
+    const newTeacherIds = (subject.teacherIds || []).map(id => id.toString());
     const removed = oldTeacherIds.filter(id => !newTeacherIds.includes(id));
     const added = newTeacherIds.filter(id => !oldTeacherIds.includes(id));
 
@@ -216,7 +240,8 @@ const deleteSubject = asyncHandler(async (req, res) => {
 });
 
 const assignTeacher = asyncHandler(async (req, res) => {
-  const { teacherId, classIds } = req.body;
+  let { teacherId, classIds } = req.body;
+  classIds = parseArrayField(classIds);
   const subject = await Subject.findById(req.params.id);
   if (!subject) {
     return res.status(404).json({

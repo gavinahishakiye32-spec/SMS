@@ -26,8 +26,18 @@ const getParents = asyncHandler(async (req, res) => {
   });
 });
 
+function parseArrayField(value) {
+  if (typeof value !== 'string') return value;
+  try { return JSON.parse(value); } catch {}
+  try { return JSON.parse(value.replace(/'/g, '"')); } catch {}
+  try { return JSON.parse(value.replace(/(\w+)\s*:/g, '"$1":')); } catch {}
+  try { return JSON.parse(value.replace(/'/g, '"').replace(/(\w+)\s*:/g, '"$1":')); } catch {}
+  return [];
+}
+
 const createParent = asyncHandler(async (req, res) => {
-  const { fullName, parentType, nationalId, NIN, phoneNumber, email, address, studentIds } = req.body;
+  let { fullName, parentType, nationalId, NIN, phoneNumber, email, address, studentIds } = req.body;
+  studentIds = parseArrayField(studentIds);
   if (!fullName) {
     return res.status(400).json({
       success: false,
@@ -71,6 +81,7 @@ const updateParent = asyncHandler(async (req, res) => {
       message: 'Parent not found',
     });
   }
+  if (req.body.studentIds !== undefined) req.body.studentIds = parseArrayField(req.body.studentIds);
   const fields = ['fullName', 'parentType', 'nationalId', 'NIN', 'phoneNumber', 'email', 'address', 'studentIds'];
   fields.forEach((f) => {
     if (req.body[f] !== undefined) parent[f] = req.body[f];

@@ -266,8 +266,17 @@ async function resolveTeacherSubjects(teachers) {
   for (const t of teachers) {
     const resolved = [];
     for (const s of t.subjectIds || []) {
-      if (s && typeof s === 'object' && s.subjectId) {
+      if (s && typeof s === 'object' && s.subjectId && typeof s.subjectId === 'object' && s.subjectId.name) {
         resolved.push(s);
+      } else if (s && typeof s === 'object' && s.subjectId) {
+        const sid = s.subjectId._id?.toString() || s.subjectId.toString?.() || s.subjectId;
+        const subject = subjectMap[sid?.toString()];
+        if (subject) {
+          resolved.push({
+            subjectId: { _id: subject._id, name: subject.name, level: subject.level },
+            classIds: (s.classIds || []).map(c => classMap[c._id?.toString() || c.toString()] || c),
+          });
+        }
       } else if (s && typeof s === 'object' && s._id && s.name) {
         resolved.push({
           subjectId: { _id: s._id, name: s.name, level: s.level },
