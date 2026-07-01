@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import API from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
@@ -10,15 +10,19 @@ export default function StudentDashboard() {
   const { activeYear, activeTerm } = useActiveYear();
   const [termId, setTermId] = useState('');
   const [academicYearId, setAcademicYearId] = useState('');
+  const yearSynced = useRef(false);
+  const termSynced = useRef(false);
 
   useEffect(() => {
-    if (activeYear && !academicYearId) {
+    if (activeYear?._id && !yearSynced.current) {
+      yearSynced.current = true;
       setAcademicYearId(activeYear._id);
     }
   }, [activeYear]);
 
   useEffect(() => {
-    if (activeTerm && !termId) {
+    if (activeTerm?._id && !termSynced.current) {
+      termSynced.current = true;
       setTermId(activeTerm._id);
     }
   }, [activeTerm]);
@@ -214,13 +218,13 @@ export default function StudentDashboard() {
             <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
               <p className="text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wide mb-1">Position in Class</p>
               <p className="text-lg font-bold text-gray-900 dark:text-white">
-                #{report.classRank || '?'} {report.totalStudentsInClass != null ? `out of ${report.totalStudentsInClass}` : ''}
+                #{report.classRank ?? '?'} {report.totalStudentsInClass != null ? `out of ${report.totalStudentsInClass}` : ''}
               </p>
             </div>
             <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
               <p className="text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wide mb-1">Position in School</p>
               <p className="text-lg font-bold text-gray-900 dark:text-white">
-                #{report.schoolRank || '?'} {report.totalStudentsInSchool != null ? `out of ${report.totalStudentsInSchool}` : ''}
+                #{report.schoolRank ?? '?'} {report.totalStudentsInSchool != null ? `out of ${report.totalStudentsInSchool}` : ''}
               </p>
             </div>
           </div>

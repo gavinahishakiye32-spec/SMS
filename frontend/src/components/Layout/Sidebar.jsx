@@ -103,10 +103,6 @@ export default function Sidebar({ open, onClose }) {
               )}
             </NavLink>
           ))}
-          <style>{`
-            .icon-color { color: var(--icon-clr); }
-            [aria-current="page"] .icon-color { color: white; }
-          `}</style>
         </nav>
       </aside>
     </>

@@ -299,8 +299,8 @@ const getStudentReportPdf = asyncHandler(async (req, res) => {
     doc.fontSize(10);
     const totalLabel = `Total Marks: ${(r.combinedTotal || 0).toFixed(0)}`;
     const avgLabel = `Average: ${r.overallAverage ? r.overallAverage.toFixed(0) : '0'}`;
-    const rankLabel = `Class Position: ${r.classRank || '?'}${r.totalStudentsInClass != null ? ' out of ' + r.totalStudentsInClass : ''}`;
-    const schoolRankLabel = `School Position: ${r.schoolRank || '?'}${r.totalStudentsInSchool != null ? ' out of ' + r.totalStudentsInSchool : ''}`;
+    const rankLabel = `Class Position: ${r.classRank ?? '?'}${r.totalStudentsInClass != null ? ' out of ' + r.totalStudentsInClass : ''}`;
+    const schoolRankLabel = `School Position: ${r.schoolRank ?? '?'}${r.totalStudentsInSchool != null ? ' out of ' + r.totalStudentsInSchool : ''}`;
     doc.text(`${totalLabel}    |    ${avgLabel}`);
     doc.moveDown(0.3);
     doc.font('Helvetica-Bold').fontSize(11);

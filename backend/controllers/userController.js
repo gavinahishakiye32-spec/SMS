@@ -10,9 +10,16 @@ const getUsers = asyncHandler(async (req, res) => {
   const limit = parseInt(req.query.limit) || 10;
   const skip = (page - 1) * limit;
 
-  const filter = req.user.role === 'schooladmin'
-    ? { role: { $nin: ['superadmin', 'schooladmin'] } }
-    : {};
+  let filter = {};
+  if (req.user.role === 'schooladmin') {
+    filter.role = 'teacher';
+  } else if (req.query.role) {
+    if (['schooladmin', 'teacher'].includes(req.query.role)) {
+      filter.role = req.query.role;
+    }
+  } else {
+    filter.role = { $in: ['schooladmin', 'teacher'] };
+  }
 
   const total = await User.countDocuments(filter);
   const users = await User.find(filter).select('-password').skip(skip).limit(limit);
@@ -52,7 +59,14 @@ const createUser = asyncHandler(async (req, res) => {
     });
   }
 
-  if (role && !['superadmin', 'schooladmin', 'teacher', 'student'].includes(role)) {
+  if (role === 'student') {
+    return res.status(403).json({
+      success: false,
+      message: 'Students must be created through the student management section.',
+    });
+  }
+
+  if (role && !['schooladmin', 'teacher'].includes(role)) {
     return res.status(400).json({
       success: false,
       message: 'Invalid role specified',
@@ -130,7 +144,7 @@ const updateUser = asyncHandler(async (req, res) => {
   
   const newRole = req.body.role || user.role;
 
-  if (req.body.role && !['superadmin', 'schooladmin', 'teacher', 'student'].includes(req.body.role)) {
+  if (req.body.role && !['schooladmin', 'teacher'].includes(req.body.role)) {
     return res.status(400).json({
       success: false,
       message: 'Invalid role specified',

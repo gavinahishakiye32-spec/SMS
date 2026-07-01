@@ -4,20 +4,30 @@ import { useToast } from '../../context/ToastContext';
 import { useAuth } from '../../context/AuthContext';
 import API from '../../services/api';
 
+const TABS = [
+  { key: '', label: 'All', roles: ['superadmin'] },
+  { key: 'schooladmin', label: 'School Admins', roles: ['superadmin'] },
+  { key: 'teacher', label: 'Teachers', roles: ['superadmin', 'schooladmin'] },
+];
+
 export default function UsersPage() {
   const { addToast } = useToast();
   const { user } = useAuth();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
+  const [roleTab, setRoleTab] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState({ name: '', email: '', password: '', role: 'teacher' });
   const queryClient = useQueryClient();
 
+  const roleParam = roleTab ? `&role=${roleTab}` : '';
   const { data } = useQuery({
-    queryKey: ['users', page],
-    queryFn: () => API.get(`/users?page=${page}&limit=10`).then((r) => r.data),
+    queryKey: ['users', page, roleTab],
+    queryFn: () => API.get(`/users?page=${page}&limit=10${roleParam}`).then((r) => r.data),
   });
+
+  const visibleTabs = TABS.filter((t) => t.roles.includes(user?.role));
 
   const createMutation = useMutation({
     mutationFn: () => API.post('/users', form),
@@ -69,7 +79,7 @@ export default function UsersPage() {
   const filteredUsers = data?.data?.filter((u) => {
     const term = search.toLowerCase();
     if (!term) return true;
-    return u.name?.toLowerCase().includes(term) || u.email?.toLowerCase().includes(term) || u.role?.toLowerCase().includes(term);
+    return u.name?.toLowerCase().includes(term) || u.email?.toLowerCase().includes(term);
   });
 
   const roleColors = {
@@ -81,15 +91,28 @@ export default function UsersPage() {
 
   return (
     <div className="space-y-4">
+      <h1 className="text-2xl font-bold text-gray-900 dark:text-white">User Management</h1>
+
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">User Management</h1>
-        <button onClick={() => { setShowForm(true); setEditing(null); setForm({ name: '', email: '', password: '', role: 'teacher' }); }}
+        <div className="flex gap-1 bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
+          {visibleTabs.map((tab) => (
+            <button key={tab.key} onClick={() => { setRoleTab(tab.key); setPage(1); setSearch(''); }}
+              className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                roleTab === tab.key
+                  ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
+                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+              }`}>
+              {tab.label}
+            </button>
+          ))}
+        </div>
+        <button onClick={() => { setShowForm(true); setEditing(null); setForm({ name: '', email: '', password: '', role: roleTab || 'teacher' }); }}
           className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-          + Create User
+          + Create {roleTab ? TABS.find((t) => t.key === roleTab)?.label.slice(0, -1) || 'User' : 'User'}
         </button>
       </div>
 
-      <input type="text" placeholder="Search by name, email, or role..." value={search}
+      <input type="text" placeholder="Search by name or email..." value={search}
         onChange={(e) => setSearch(e.target.value)}
         className="w-full sm:w-72 px-4 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
 
@@ -110,7 +133,6 @@ export default function UsersPage() {
                 className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
                 <option value="schooladmin">School Admin</option>
                 <option value="teacher">Teacher</option>
-                <option value="student">Student</option>
               </select>
               <div className="flex gap-3 pt-2">
                 <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">

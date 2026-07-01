@@ -2,9 +2,11 @@ import { useState, useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Printer } from 'lucide-react';
 import API from '../../services/api';
+import { useToast } from '../../context/ToastContext';
 import { useActiveYear } from '../../services/useActiveYear';
 
 export default function ReportsPage() {
+  const { addToast } = useToast();
   const { activeYear } = useActiveYear();
   const [studentId, setStudentId] = useState('');
   const [classId, setClassId] = useState('');
@@ -45,7 +47,7 @@ export default function ReportsPage() {
       const { data } = await API.get(`/reports/student/${sid}${studentTermId ? `?termId=${studentTermId}` : ''}`);
       setReport(data.data);
       setSearchResults(null);
-    } catch { setReport(null); }
+    } catch { setReport(null); addToast('Student not found', 'error'); }
     setLoading(false);
   };
 
@@ -56,7 +58,7 @@ export default function ReportsPage() {
       const { data } = await API.get(`/reports/class/${classId}${classTermId ? `?termId=${classTermId}` : ''}`);
       setReport({ classReport: data.data });
       setSearchResults(null);
-    } catch { setReport(null); }
+    } catch { setReport(null); addToast('No data found for this class', 'error'); }
     setLoading(false);
   };
 
@@ -72,7 +74,7 @@ export default function ReportsPage() {
       const { data } = await API.get(`/reports/search?${params}`);
       setSearchResults(data.data);
       setReport(null);
-    } catch { setSearchResults([]); }
+    } catch { setSearchResults([]); addToast('Search failed', 'error'); }
     setLoading(false);
   };
 
@@ -82,7 +84,7 @@ export default function ReportsPage() {
       const termParam = term || '';
       const { data } = await API.get(`/reports/student/${sid}${termParam ? `?termId=${termParam}` : ''}`);
       setReport(data.data);
-    } catch { setReport(null); }
+    } catch { setReport(null); addToast('Could not load report', 'error'); }
     setLoading(false);
   };
 

@@ -7,7 +7,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 const COLORS = ['#16A34A', '#2563EB', '#14B8A6', '#D97706', '#F97316', '#DC2626', '#6B7280'];
 
 export default function AnalyticsPage() {
-  const { activeYear, defaultAcademicYearId, allAcademicYears } = useActiveYear();
+  const { defaultAcademicYearId, allAcademicYears } = useActiveYear();
   const [classId, setClassId] = useState('');
   const [academicYearId, setAcademicYearId] = useState('');
   const yearSynced = useRef(false);

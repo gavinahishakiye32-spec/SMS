@@ -63,7 +63,7 @@ export default function App() {
       <Route path="/dashboard" element={<DashboardRedirect />} />
       <Route path="/admin" element={<ProtectedRoute roles={['superadmin', 'schooladmin', 'teacher']}><MainLayout /></ProtectedRoute>}>
         <Route path="dashboard" element={<ProtectedRoute roles={['superadmin', 'schooladmin']}><Lazy><AdminDashboardSwitch /></Lazy></ProtectedRoute>} />
-        <Route path="students" element={<Lazy><StudentsPage /></Lazy>} />
+        <Route path="students" element={<ProtectedRoute roles={['superadmin', 'schooladmin', 'teacher']}><Lazy><StudentsPage /></Lazy></ProtectedRoute>} />
         <Route path="teachers" element={<ProtectedRoute roles={['superadmin', 'schooladmin']}><Lazy><TeachersPage /></Lazy></ProtectedRoute>} />
         <Route path="parents" element={<ProtectedRoute roles={['superadmin', 'schooladmin']}><Lazy><ParentsPage /></Lazy></ProtectedRoute>} />
         <Route path="classes" element={<ProtectedRoute roles={['superadmin', 'schooladmin']}><Lazy><ClassesPage /></Lazy></ProtectedRoute>} />

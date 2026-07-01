@@ -89,7 +89,8 @@ export default function StudentsPage() {
       } else {
         const res = await API.post('/students', form);
         const password = res.data.data?.defaultPassword;
-        const loginEmail = res.data.data?.email || `${res.data.data?.studentCode?.toLowerCase()}@sms.edu`;
+        const code = res.data.data?.studentCode;
+        const loginEmail = res.data.data?.email || (code ? `${code.toLowerCase()}@sms.edu` : '');
         addToast(`Student created! Login: ${loginEmail} / Password: ${password || 'student123'}`, 'success');
       }
       setShowForm(false);
