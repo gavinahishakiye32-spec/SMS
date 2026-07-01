@@ -1,13 +1,27 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import API from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
+import { useActiveYear } from '../../services/useActiveYear';
 import { BookOpen } from 'lucide-react';
 
 export default function StudentDashboard() {
   const { user } = useAuth();
+  const { activeYear, activeTerm } = useActiveYear();
   const [termId, setTermId] = useState('');
   const [academicYearId, setAcademicYearId] = useState('');
+
+  useEffect(() => {
+    if (activeYear && !academicYearId) {
+      setAcademicYearId(activeYear._id);
+    }
+  }, [activeYear]);
+
+  useEffect(() => {
+    if (activeTerm && !termId) {
+      setTermId(activeTerm._id);
+    }
+  }, [activeTerm]);
 
   const { data: terms } = useQuery({
     queryKey: ['terms'],

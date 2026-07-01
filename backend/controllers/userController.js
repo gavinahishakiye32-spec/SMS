@@ -2,13 +2,20 @@ const asyncHandler = require('express-async-handler');
 const User = require('../models/User');
 const Student = require('../models/Student');
 const Teacher = require('../models/Teacher');
+const Mark = require('../models/Mark');
+const Report = require('../models/Report');
 
 const getUsers = asyncHandler(async (req, res) => {
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 10;
   const skip = (page - 1) * limit;
-  const total = await User.countDocuments({});
-  const users = await User.find({}).select('-password').skip(skip).limit(limit);
+
+  const filter = req.user.role === 'schooladmin'
+    ? { role: { $nin: ['superadmin', 'schooladmin'] } }
+    : {};
+
+  const total = await User.countDocuments(filter);
+  const users = await User.find(filter).select('-password').skip(skip).limit(limit);
   return res.json({
     success: true,
     data: users,
@@ -39,13 +46,10 @@ const createUser = asyncHandler(async (req, res) => {
   }
 
   if (role === 'superadmin') {
-    const existingSuperadmin = await User.findOne({ role: 'superadmin' });
-    if (existingSuperadmin) {
-      return res.status(403).json({
-        success: false,
-        message: 'A superadmin already exists. Only one superadmin is allowed.',
-      });
-    }
+    return res.status(403).json({
+      success: false,
+      message: 'Cannot create superadmin. The superadmin account already exists and only one is allowed.',
+    });
   }
 
   if (role && !['superadmin', 'schooladmin', 'teacher', 'student'].includes(role)) {
@@ -87,6 +91,12 @@ const getUserById = asyncHandler(async (req, res) => {
     return res.status(404).json({
       success: false,
       message: 'User not found',
+    });
+  }
+  if (req.user.role === 'schooladmin' && ['superadmin', 'schooladmin'].includes(user.role)) {
+    return res.status(403).json({
+      success: false,
+      message: 'You do not have permission to view this user',
     });
   }
   return res.json({ success: true, data: user });
@@ -141,14 +151,11 @@ const updateUser = asyncHandler(async (req, res) => {
     });
   }
 
-  if (req.body.role === 'superadmin' && newRole === 'superadmin') {
-    const existingSuperadmin = await User.findOne({ role: 'superadmin', _id: { $ne: user._id } });
-    if (existingSuperadmin) {
-      return res.status(403).json({
-        success: false,
-        message: 'A superadmin already exists. Only one superadmin is allowed.',
-      });
-    }
+  if (req.body.role === 'superadmin') {
+    return res.status(403).json({
+      success: false,
+      message: 'No one can be promoted to superadmin. Only one superadmin exists and it cannot be changed.',
+    });
   }
 
   user.name = req.body.name || user.name;

@@ -1,32 +1,48 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import API from '../../services/api';
+import { useActiveYear } from '../../services/useActiveYear';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
 const COLORS = ['#16A34A', '#2563EB', '#14B8A6', '#D97706', '#F97316', '#DC2626', '#6B7280'];
 
 export default function AnalyticsPage() {
+  const { activeYear, defaultAcademicYearId, allAcademicYears } = useActiveYear();
   const [classId, setClassId] = useState('');
+  const [academicYearId, setAcademicYearId] = useState('');
+  const yearSynced = useRef(false);
+
+  useEffect(() => {
+    if (defaultAcademicYearId && !yearSynced.current) {
+      yearSynced.current = true;
+      setAcademicYearId(defaultAcademicYearId);
+    }
+  }, [defaultAcademicYearId]);
+
+  const yearParam = academicYearId ? `&academicYearId=${academicYearId}` : '';
 
   const { data: schoolData } = useQuery({
-    queryKey: ['analytics-school-page'],
-    queryFn: () => API.get('/analytics/school').then((r) => r.data.data),
+    queryKey: ['analytics-school-page', academicYearId],
+    queryFn: () => API.get(`/analytics/school?${yearParam}`).then((r) => r.data.data),
+    enabled: !!academicYearId,
   });
 
   const { data: classData } = useQuery({
-    queryKey: ['analytics-class', classId],
-    queryFn: () => API.get(`/analytics/class/${classId}`).then((r) => r.data.data),
-    enabled: !!classId,
+    queryKey: ['analytics-class', classId, academicYearId],
+    queryFn: () => API.get(`/analytics/class/${classId}?${yearParam}`).then((r) => r.data.data),
+    enabled: !!classId && !!academicYearId,
   });
 
   const { data: classes } = useQuery({
-    queryKey: ['classes-list'],
-    queryFn: () => API.get('/classes?limit=50').then((r) => r.data.data),
+    queryKey: ['classes-list', academicYearId],
+    queryFn: () => API.get(`/classes?limit=50&academicYearId=${academicYearId}`).then((r) => r.data.data),
+    enabled: !!academicYearId,
   });
 
   const { data: topStudents } = useQuery({
-    queryKey: ['top-students'],
-    queryFn: () => API.get('/analytics/top-students?limit=5').then((r) => r.data.data),
+    queryKey: ['top-students', academicYearId],
+    queryFn: () => API.get(`/analytics/top-students?limit=5&${yearParam}`).then((r) => r.data.data),
+    enabled: !!academicYearId,
   });
 
   const gradeData = schoolData?.gradeDistribution
@@ -40,6 +56,16 @@ export default function AnalyticsPage() {
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Analytics</h1>
+      <div className="flex items-center gap-2">
+        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Academic Year:</label>
+        <select value={academicYearId} onChange={(e) => setAcademicYearId(e.target.value)}
+          className="px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+          <option value="">All Years</option>
+          {allAcademicYears?.map((y) => (
+            <option key={y._id} value={y._id}>{y.year}{y.isActive ? ' (Active)' : ''}</option>
+          ))}
+        </select>
+      </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-white dark:bg-gray-900 rounded-xl shadow p-5">
           <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">School Overview</h2>

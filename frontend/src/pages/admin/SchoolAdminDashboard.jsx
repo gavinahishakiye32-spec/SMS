@@ -1,11 +1,12 @@
 import { useQuery } from '@tanstack/react-query';
 import API from '../../services/api';
-
+import { useActiveYear } from '../../services/useActiveYear';
 
 export default function SchoolAdminDashboard() {
+  const { activeYear } = useActiveYear();
   const { data: analytics } = useQuery({
-    queryKey: ['analytics-school'],
-    queryFn: () => API.get('/analytics/school').then((r) => r.data.data),
+    queryKey: ['analytics-school', activeYear?._id],
+    queryFn: () => API.get(`/analytics/school${activeYear?._id ? `?academicYearId=${activeYear._id}` : ''}`).then((r) => r.data.data),
   });
 
   const stats = [
@@ -17,7 +18,14 @@ export default function SchoolAdminDashboard() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900 dark:text-white">School Admin Dashboard</h1>
+      <div className="flex items-center gap-3">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">School Admin Dashboard</h1>
+        {activeYear && (
+          <span className="text-sm bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400 px-3 py-1 rounded-full font-medium">
+            Academic Year: {activeYear.year}
+          </span>
+        )}
+      </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map((s) => (
           <div key={s.label} className="bg-white dark:bg-gray-900 rounded-xl shadow p-5">

@@ -108,7 +108,6 @@ export default function UsersPage() {
               )}
               <select value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })}
                 className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
-                {user?.role === 'superadmin' && <option value="superadmin">Super Admin</option>}
                 <option value="schooladmin">School Admin</option>
                 <option value="teacher">Teacher</option>
                 <option value="student">Student</option>

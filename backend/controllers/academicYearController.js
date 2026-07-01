@@ -71,6 +71,14 @@ const updateAcademicYear = asyncHandler(async (req, res) => {
     year.isActive = req.body.isActive;
     if (year.isActive) {
       await AcademicYear.updateMany({ _id: { $ne: year._id } }, { isActive: false });
+      // Auto-create terms when activating via update
+      const termNames = ['Term 1', 'Term 2', 'Term 3'];
+      for (const name of termNames) {
+        const existing = await Term.findOne({ name, academicYearId: year._id });
+        if (!existing) {
+          await Term.create({ name, academicYearId: year._id, isActive: false });
+        }
+      }
     }
   }
   const updated = await year.save();
@@ -126,15 +134,23 @@ const activateAcademicYear = asyncHandler(async (req, res) => {
   await AcademicYear.updateMany({}, { isActive: false });
   year.isActive = true;
   await year.save();
-  await Term.updateMany({}, { isActive: false });
-  const firstTerm = await Term.findOne({ academicYearId: year._id }).sort({ name: 1 });
-  if (firstTerm) {
-    firstTerm.isActive = true;
-    await firstTerm.save();
+
+  // Auto-create Term 1, Term 2, Term 3 for this year if they don't exist
+  const termNames = ['Term 1', 'Term 2', 'Term 3'];
+  for (const name of termNames) {
+    const existing = await Term.findOne({ name, academicYearId: year._id });
+    if (!existing) {
+      await Term.create({ name, academicYearId: year._id, isActive: false });
+    }
   }
+
+  // Deactivate all terms globally and activate Term 1 for this year
+  await Term.updateMany({}, { isActive: false });
+  await Term.updateOne({ name: 'Term 1', academicYearId: year._id }, { isActive: true });
+
   return res.json({
     success: true,
-    message: 'Academic year activated successfully',
+    message: 'Academic year activated successfully with Term 1, Term 2, and Term 3',
   });
 });
 
