@@ -10,6 +10,7 @@ const Teacher = require('../models/Teacher');
 const Subject = require('../models/Subject');
 const { recalculateRanks } = require('./markController');
 const { getTeacherClassIdSet } = require('../utils/teacherPermissions');
+const { resolveAcademicYear, resolveQueryAcademicYear, resolveQueryTerm } = require('../utils/activeYear');
 
 const generateStudentCode = async () => {
   const year = new Date().getFullYear().toString();
@@ -40,7 +41,8 @@ const getStudents = asyncHandler(async (req, res) => {
   }
   if (req.query.classId) query.classId = req.query.classId;
   if (req.query.sectionId) query.sectionId = req.query.sectionId;
-  if (req.query.academicYearId) query.academicYearId = req.query.academicYearId;
+  const qAcademicYearId = await resolveQueryAcademicYear(req.query.academicYearId);
+  if (qAcademicYearId) query.academicYearId = qAcademicYearId;
   if (req.query.gender) query.gender = req.query.gender;
   if (req.query.userId) query.userId = req.query.userId;
   if (req.query.level) {
@@ -90,6 +92,12 @@ const createStudent = asyncHandler(async (req, res) => {
       message: 'Please provide required fields: firstName, lastName, gender, classId',
     });
   }
+  if (!['Male', 'Female'].includes(gender)) {
+    return res.status(400).json({
+      success: false,
+      message: 'Gender must be Male or Female',
+    });
+  }
   if (req.user.role === 'teacher') {
     const allowedClassIds = await getTeacherClassIdSet(req.user._id);
     if (!allowedClassIds.has(classId)) {
@@ -99,17 +107,7 @@ const createStudent = asyncHandler(async (req, res) => {
       });
     }
   }
-  let academicYear = academicYearId;
-  if (!academicYear) {
-    const activeYear = await AcademicYear.findOne({ isActive: true });
-    if (!activeYear) {
-      return res.status(400).json({
-        success: false,
-        message: 'No active academic year found. Please create and activate one first.',
-      });
-    }
-    academicYear = activeYear._id;
-  }
+  const academicYear = await resolveAcademicYear(academicYearId);
   let resolvedSectionId = sectionId || undefined;
   if (!resolvedSectionId && sectionName) {
     const classDoc = await Class.findById(classId).select('level').lean();
@@ -338,9 +336,9 @@ const getStudentReport = asyncHandler(async (req, res) => {
       });
     }
   }
-  const { termId } = req.query;
+  const qTermId = await resolveQueryTerm(req.query.termId, student.academicYearId?._id);
   let reportQuery = { studentId: student._id };
-  if (termId) reportQuery.termId = termId;
+  if (qTermId) reportQuery.termId = qTermId;
   if (student.academicYearId) reportQuery.academicYearId = student.academicYearId._id;
   let report = await Report.findOne(reportQuery)
     .populate('termId')
@@ -381,11 +379,12 @@ const getStudentRanking = asyncHandler(async (req, res) => {
       message: 'You do not have permission to view this ranking',
     });
   }
-  const { termId, academicYearId } = req.query;
+  const qAcademicYearId = await resolveQueryAcademicYear(req.query.academicYearId);
+  const qTermId = await resolveQueryTerm(req.query.termId, qAcademicYearId);
   let match = {};
   if (student.classId) match.classId = student.classId;
-  if (termId) match.termId = termId;
-  if (academicYearId) match.academicYearId = academicYearId;
+  if (qTermId) match.termId = qTermId;
+  if (qAcademicYearId) match.academicYearId = qAcademicYearId;
   const reports = await Report.find(match).sort({ overallAverage: -1 });
   const rank = reports.findIndex(
     (r) => r.studentId && r.studentId.toString() === student._id.toString()

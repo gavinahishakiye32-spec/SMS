@@ -78,10 +78,10 @@ describe('Academic Year Filter Integration Tests', () => {
   }
 
   describe('GET /api/marks (list marks)', () => {
-    it('returns all marks when no academicYearId filter', async () => {
+    it('returns marks filtered to active year when no academicYearId filter', async () => {
       const res = await authGet('/api/marks?limit=100');
       expect(res.status).toBe(200);
-      expect(res.body.data.length).toBe(2);
+      expect(res.body.data.length).toBe(1);
     });
 
     it('filters marks by academicYearId', async () => {
@@ -117,10 +117,10 @@ describe('Academic Year Filter Integration Tests', () => {
   });
 
   describe('GET /api/marks/student/:studentId', () => {
-    it('returns all student marks when no filter', async () => {
+    it('returns student marks filtered to active year when no filter', async () => {
       const res = await authGet(`/api/marks/student/${student1._id}`);
       expect(res.status).toBe(200);
-      expect(res.body.data.length).toBe(2);
+      expect(res.body.data.length).toBe(1);
     });
 
     it('filters student marks by academicYearId', async () => {

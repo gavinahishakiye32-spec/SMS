@@ -1,13 +1,23 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import API from '../../services/api';
+import { useActiveYear } from '../../services/useActiveYear';
 
 export default function MarksPage() {
+  const { activeYear } = useActiveYear();
   const [page, setPage] = useState(1);
   const [classFilter, setClassFilter] = useState('');
   const [subjectFilter, setSubjectFilter] = useState('');
   const [termFilter, setTermFilter] = useState('');
   const [academicYearFilter, setAcademicYearFilter] = useState('');
+  const yearSynced = useRef(false);
+
+  useEffect(() => {
+    if (activeYear && !yearSynced.current) {
+      yearSynced.current = true;
+      setAcademicYearFilter(activeYear._id);
+    }
+  }, [activeYear]);
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ['marks', page, classFilter, subjectFilter, termFilter, academicYearFilter],

@@ -3,11 +3,13 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import API from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
+import { useActiveYear } from '../../services/useActiveYear';
 
 export default function TeacherMarks() {
   const { user } = useAuth();
   const { addToast } = useToast();
   const queryClient = useQueryClient();
+  const { activeYear } = useActiveYear();
   const [level, setLevel] = useState('');
   const [subjectId, setSubjectId] = useState('');
   const [classId, setClassId] = useState('');
@@ -16,6 +18,14 @@ export default function TeacherMarks() {
   const [marks, setMarks] = useState({});
   const [saving, setSaving] = useState(false);
   const initialized = useRef(false);
+  const yearSynced = useRef(false);
+
+  useEffect(() => {
+    if (activeYear && !yearSynced.current) {
+      yearSynced.current = true;
+      setAcademicYearId(activeYear._id);
+    }
+  }, [activeYear]);
 
   const { data: teacher } = useQuery({
     queryKey: ['teacher-profile', user?._id],
@@ -53,8 +63,6 @@ export default function TeacherMarks() {
     queryKey: ['academic-years'],
     queryFn: () => API.get('/academic-years').then((r) => r.data.data),
   });
-
-  const activeYear = academicYears?.find((y) => y.isActive);
 
   const { data: students, isLoading: studentsLoading } = useQuery({
     queryKey: ['students-for-marks', classId, academicYearId],

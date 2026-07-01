@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Printer } from 'lucide-react';
 import API from '../../services/api';
+import { useActiveYear } from '../../services/useActiveYear';
 
 export default function ReportsPage() {
+  const { activeYear } = useActiveYear();
   const [studentId, setStudentId] = useState('');
   const [classId, setClassId] = useState('');
   const [studentTermId, setStudentTermId] = useState('');
@@ -15,6 +17,14 @@ export default function ReportsPage() {
   const [searchTermId, setSearchTermId] = useState('');
   const [searchAcademicYearId, setSearchAcademicYearId] = useState('');
   const [searchResults, setSearchResults] = useState(null);
+  const yearSynced = useRef(false);
+
+  useEffect(() => {
+    if (activeYear && !yearSynced.current) {
+      yearSynced.current = true;
+      setSearchAcademicYearId(activeYear._id);
+    }
+  }, [activeYear]);
 
   const { data: classes } = useQuery({ queryKey: ['classes-list'], queryFn: () => API.get('/classes?limit=50').then((r) => r.data.data) });
   const { data: terms } = useQuery({ queryKey: ['terms'], queryFn: () => API.get('/terms').then((r) => r.data.data) });
@@ -25,7 +35,14 @@ export default function ReportsPage() {
     if (!studentId) return;
     setLoading(true);
     try {
-      const { data } = await API.get(`/reports/student/${studentId}${studentTermId ? `?termId=${studentTermId}` : ''}`);
+      let sid = studentId;
+      if (!/^[0-9a-fA-F]{24}$/.test(studentId)) {
+        const studentsRes = await API.get(`/students?search=${encodeURIComponent(studentId)}&limit=1`);
+        const found = studentsRes.data?.data?.[0];
+        if (!found) throw new Error('Student not found');
+        sid = found._id;
+      }
+      const { data } = await API.get(`/reports/student/${sid}${studentTermId ? `?termId=${studentTermId}` : ''}`);
       setReport(data.data);
       setSearchResults(null);
     } catch { setReport(null); }
@@ -103,7 +120,7 @@ export default function ReportsPage() {
           <div className="bg-white dark:bg-gray-900 rounded-xl shadow p-4 sm:p-5">
             <h2 className="text-lg font-bold mb-3 text-gray-900 dark:text-white">Quick Student Lookup</h2>
             <div className="flex flex-col sm:flex-row flex-wrap gap-2 mb-2">
-              <input placeholder="Student ID" value={studentId} onChange={(e) => setStudentId(e.target.value)}
+              <input placeholder="Student ID or Code" value={studentId} onChange={(e) => setStudentId(e.target.value)}
                 className="w-full sm:flex-1 px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
               <select value={studentTermId} onChange={(e) => setStudentTermId(e.target.value)}
                 className="w-full sm:w-auto px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
@@ -268,9 +285,9 @@ export default function ReportsPage() {
         <div className="bg-white dark:bg-gray-900 rounded-xl shadow p-5 no-print">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-bold text-gray-900 dark:text-white">Class Rankings</h2>
-            {report.report?.academicYearId?.year && (
+            {report.classReport[0]?.academicYearId?.year && (
               <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">
-                {report.report.academicYearId.year} | {report.report.termId?.name || ''}
+                {report.classReport[0].academicYearId.year} | {report.classReport[0]?.termId?.name || ''}
               </span>
             )}
           </div>

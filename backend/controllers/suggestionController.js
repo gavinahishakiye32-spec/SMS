@@ -68,8 +68,8 @@ const updateSuggestion = asyncHandler(async (req, res) => {
       message: 'You do not have permission for this action',
     });
   }
-  if (req.body.title) suggestion.title = req.body.title;
-  if (req.body.body) suggestion.body = req.body.body;
+  if (req.body.title !== undefined) suggestion.title = req.body.title;
+  if (req.body.body !== undefined) suggestion.body = req.body.body;
   const updated = await suggestion.save();
   return res.json({
     success: true,

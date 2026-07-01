@@ -7,6 +7,12 @@ const errorHandler = (err, req, res, next) => {
     message = 'Resource not found';
   }
 
+  if (err.name === 'ValidationError') {
+    statusCode = 400;
+    const msgs = Object.values(err.errors || {}).map((e) => e.message).join(', ');
+    message = msgs || 'Validation failed';
+  }
+
   if (err.code === 11000) {
     statusCode = 409;
     const keyValue = err.keyValue ? Object.keys(err.keyValue).map(k => `${k}: "${err.keyValue[k]}"`).join(', ') : '';

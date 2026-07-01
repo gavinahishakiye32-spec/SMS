@@ -67,7 +67,12 @@ const updateAcademicYear = asyncHandler(async (req, res) => {
     });
   }
   if (req.body.year) year.year = req.body.year;
-  if (req.body.isActive !== undefined) year.isActive = req.body.isActive;
+  if (req.body.isActive !== undefined) {
+    year.isActive = req.body.isActive;
+    if (year.isActive) {
+      await AcademicYear.updateMany({ _id: { $ne: year._id } }, { isActive: false });
+    }
+  }
   const updated = await year.save();
   return res.json({
     success: true,
@@ -121,10 +126,24 @@ const activateAcademicYear = asyncHandler(async (req, res) => {
   await AcademicYear.updateMany({}, { isActive: false });
   year.isActive = true;
   await year.save();
+  await Term.updateMany({}, { isActive: false });
+  const firstTerm = await Term.findOne({ academicYearId: year._id }).sort({ name: 1 });
+  if (firstTerm) {
+    firstTerm.isActive = true;
+    await firstTerm.save();
+  }
   return res.json({
     success: true,
     message: 'Academic year activated successfully',
   });
+});
+
+const getActiveAcademicYear = asyncHandler(async (req, res) => {
+  const year = await AcademicYear.findOne({ isActive: true });
+  if (!year) {
+    return res.status(404).json({ success: false, message: 'No active academic year found' });
+  }
+  return res.json({ success: true, data: year });
 });
 
 module.exports = {
@@ -134,4 +153,5 @@ module.exports = {
   updateAcademicYear,
   deleteAcademicYear,
   activateAcademicYear,
+  getActiveAcademicYear,
 };

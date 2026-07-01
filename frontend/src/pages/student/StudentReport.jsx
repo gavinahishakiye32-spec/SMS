@@ -1,12 +1,22 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import API from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
+import { useActiveYear } from '../../services/useActiveYear';
 
 export default function StudentReport() {
   const { user } = useAuth();
+  const { activeYear } = useActiveYear();
   const [termId, setTermId] = useState('');
   const [academicYearId, setAcademicYearId] = useState('');
+  const yearSynced = useRef(false);
+
+  useEffect(() => {
+    if (activeYear && !yearSynced.current) {
+      yearSynced.current = true;
+      setAcademicYearId(activeYear._id);
+    }
+  }, [activeYear]);
 
   const { data: profile } = useQuery({
     queryKey: ['student-profile-report', user?._id],
@@ -105,7 +115,7 @@ export default function StudentReport() {
                   <td className="border p-2 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700">{m.subjectId?.name}</td>
                   <td className={`border p-2 text-center border-gray-200 dark:border-gray-700 ${m.midtermMarks != null ? (m.midtermMarks >= 40 ? 'text-green-600 dark:text-green-400 font-medium' : 'text-red-600 dark:text-red-400 font-medium') : 'text-gray-700 dark:text-gray-300'}`}>{m.midtermMarks ?? '-'}</td>
                   <td className={`border p-2 text-center border-gray-200 dark:border-gray-700 ${m.endTermMarks != null ? (m.endTermMarks >= 40 ? 'text-green-600 dark:text-green-400 font-medium' : 'text-red-600 dark:text-red-400 font-medium') : 'text-gray-700 dark:text-gray-300'}`}>{m.endTermMarks ?? '-'}</td>
-                  <td className={`border p-2 text-center border-gray-200 dark:border-gray-700 ${m.subjectAverage >= 40 ? 'text-green-600 dark:text-green-400 font-medium' : 'text-red-600 dark:text-red-400 font-medium'}`}>{m.subjectAverage?.toFixed(0) || '-'}</td>
+                  <td className={`border p-2 text-center border-gray-200 dark:border-gray-700 ${m.subjectAverage != null && m.subjectAverage >= 40 ? 'text-green-600 dark:text-green-400 font-medium' : 'text-red-600 dark:text-red-400 font-medium'}`}>{m.subjectAverage != null ? m.subjectAverage.toFixed(0) : '-'}</td>
                   <td className="border p-2 text-center font-bold border-gray-200 dark:border-gray-700">
                     <span className={`inline-block px-2 py-0.5 rounded text-xs font-bold ${m.grade === 'A' ? 'bg-green-100 text-green-700' : m.grade === 'B' ? 'bg-blue-100 text-blue-700' : m.grade === 'C' ? 'bg-yellow-100 text-yellow-700' : m.grade === 'D' ? 'bg-orange-100 text-orange-700' : m.grade === 'E' ? 'bg-red-100 text-red-700' : m.grade === 'F' ? 'bg-red-200 text-red-800' : 'bg-gray-100 text-gray-500'}`}>
                       {m.grade || '-'}

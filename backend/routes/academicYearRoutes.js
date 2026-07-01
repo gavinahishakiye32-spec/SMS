@@ -1,7 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const { getAcademicYears, createAcademicYear, getAcademicYearById, updateAcademicYear, deleteAcademicYear, activateAcademicYear } = require('../controllers/academicYearController');
+const { getAcademicYears, createAcademicYear, getAcademicYearById, updateAcademicYear, deleteAcademicYear, activateAcademicYear, getActiveAcademicYear } = require('../controllers/academicYearController');
 const { protect, authorizeRoles } = require('../middleware/auth');
+
+router.get('/active', protect, getActiveAcademicYear);
 
 router.route('/')
   .get(protect, getAcademicYears)

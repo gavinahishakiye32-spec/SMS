@@ -7,10 +7,12 @@ const Class = require('../models/Class');
 const Teacher = require('../models/Teacher');
 const PDFDocument = require('pdfkit');
 const { getTeacherClassIdSet } = require('../utils/teacherPermissions');
+const { resolveQueryAcademicYear, resolveQueryTerm } = require('../utils/activeYear');
 
 const getStudentReport = asyncHandler(async (req, res) => {
   const { studentId } = req.params;
-  const { termId, academicYearId } = req.query;
+  const qTermId = await resolveQueryTerm(req.query.termId, req.query.academicYearId);
+  const qAcademicYearId = await resolveQueryAcademicYear(req.query.academicYearId);
   const student = await Student.findById(studentId)
     .populate('classId', 'name level')
     .populate('sectionId', 'name')
@@ -37,8 +39,8 @@ const getStudentReport = asyncHandler(async (req, res) => {
     }
   }
   let query = { studentId };
-  if (termId) query.termId = termId;
-  if (academicYearId) query.academicYearId = academicYearId;
+  if (qTermId) query.termId = qTermId;
+  if (qAcademicYearId) query.academicYearId = qAcademicYearId;
   const report = await Report.findOne(query)
     .populate('termId', 'name')
     .populate('academicYearId', 'year')
@@ -70,10 +72,12 @@ const getClassReport = asyncHandler(async (req, res) => {
       });
     }
   }
-  const { termId, academicYearId } = req.query;
+  const qTermId = await resolveQueryTerm(req.query.termId, req.query.academicYearId);
+  const qAcademicYearId = await resolveQueryAcademicYear(req.query.academicYearId);
   let query = { classId };
-  if (termId) query.termId = termId;
-  if (academicYearId) query.academicYearId = academicYearId;
+  if (qTermId) query.termId = qTermId;
+  if (qAcademicYearId) query.academicYearId = qAcademicYearId;
+
   const reports = await Report.find(query)
     .populate('studentId', 'firstName lastName studentCode')
     .populate('termId', 'name')
@@ -83,10 +87,12 @@ const getClassReport = asyncHandler(async (req, res) => {
 });
 
 const getSchoolReport = asyncHandler(async (req, res) => {
-  const { termId, academicYearId, level } = req.query;
+  const { level } = req.query;
+  const qTermId = await resolveQueryTerm(req.query.termId, req.query.academicYearId);
+  const qAcademicYearId = await resolveQueryAcademicYear(req.query.academicYearId);
   let query = {};
-  if (termId) query.termId = termId;
-  if (academicYearId) query.academicYearId = academicYearId;
+  if (qTermId) query.termId = qTermId;
+  if (qAcademicYearId) query.academicYearId = qAcademicYearId;
 
   if (level) {
     const classIds = await Class.find({ level }).select('_id').lean();
@@ -102,7 +108,9 @@ const getSchoolReport = asyncHandler(async (req, res) => {
 });
 
 const searchReports = asyncHandler(async (req, res) => {
-  const { q, classId, termId, academicYearId } = req.query;
+  const { q, classId } = req.query;
+  const qTermId = await resolveQueryTerm(req.query.termId, req.query.academicYearId);
+  const qAcademicYearId = await resolveQueryAcademicYear(req.query.academicYearId);
 
   let studentQuery = {};
   if (q) {
@@ -145,8 +153,8 @@ const searchReports = asyncHandler(async (req, res) => {
   let reportQuery = {
     studentId: { $in: students.map((s) => s._id) },
   };
-  if (termId) reportQuery.termId = termId;
-  if (academicYearId) reportQuery.academicYearId = academicYearId;
+  if (qTermId) reportQuery.termId = qTermId;
+  if (qAcademicYearId) reportQuery.academicYearId = qAcademicYearId;
 
   const reports = await Report.find(reportQuery)
     .populate('termId', 'name')
@@ -169,6 +177,10 @@ const searchReports = asyncHandler(async (req, res) => {
 
 const getStudentReportPdf = asyncHandler(async (req, res) => {
   const { studentId } = req.params;
+  const qTermId = await resolveQueryTerm(req.query.termId, req.query.academicYearId);
+  const qAcademicYearId = await resolveQueryAcademicYear(req.query.academicYearId);
+  req.query.termId = qTermId;
+  req.query.academicYearId = qAcademicYearId;
   const student = await Student.findById(studentId).select('userId classId').lean();
   if (!student) {
     return res.status(404).json({

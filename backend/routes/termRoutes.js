@@ -1,7 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const { getTerms, createTerm, getTermById, updateTerm, deleteTerm } = require('../controllers/termController');
+const { getTerms, createTerm, getTermById, updateTerm, deleteTerm, getActiveTerm } = require('../controllers/termController');
 const { protect, authorizeRoles } = require('../middleware/auth');
+
+router.get('/active', protect, getActiveTerm);
 
 router.route('/')
   .get(protect, getTerms)

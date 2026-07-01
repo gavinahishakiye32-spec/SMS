@@ -1,12 +1,14 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import API from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import { useAuth } from '../../context/AuthContext';
+import { useActiveYear } from '../../services/useActiveYear';
 
 export default function StudentsPage() {
   const { addToast } = useToast();
   const { user } = useAuth();
+  const { activeYear } = useActiveYear();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [level, setLevel] = useState('');
@@ -14,12 +16,20 @@ export default function StudentsPage() {
   const [sectionFilter, setSectionFilter] = useState('');
   const [genderFilter, setGenderFilter] = useState('');
   const [academicYearFilter, setAcademicYearFilter] = useState('');
+  const yearSynced = useRef(false);
+
+  useEffect(() => {
+    if (activeYear && !yearSynced.current) {
+      yearSynced.current = true;
+      setAcademicYearFilter(activeYear._id);
+    }
+  }, [activeYear]);
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState({
     firstName: '', lastName: '', gender: 'Male', dateOfBirth: '', NIN: '',
     address: '', phoneNumber: '', email: '', classId: '', sectionId: '',
-    academicYearId: '',
+    academicYearId: activeYear?._id || '',
   });
   const queryClient = useQueryClient();
 
@@ -84,7 +94,7 @@ export default function StudentsPage() {
       }
       setShowForm(false);
       setEditing(null);
-      setForm({ firstName: '', lastName: '', gender: 'Male', dateOfBirth: '', NIN: '', address: '', phoneNumber: '', email: '', classId: '', sectionId: '', academicYearId: '' });
+      setForm({ firstName: '', lastName: '', gender: 'Male', dateOfBirth: '', NIN: '', address: '', phoneNumber: '', email: '', classId: '', sectionId: '', academicYearId: activeYear?._id || '' });
       queryClient.invalidateQueries({ queryKey: ['students'] });
       queryClient.invalidateQueries({ queryKey: ['analytics-school'] });
     } catch (err) {

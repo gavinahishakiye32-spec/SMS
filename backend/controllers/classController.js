@@ -7,6 +7,7 @@ const Report = require('../models/Report');
 const Teacher = require('../models/Teacher');
 const { recalculateRanks } = require('./markController');
 const { getTeacherClassIdSet } = require('../utils/teacherPermissions');
+const { resolveAcademicYear, resolveQueryAcademicYear, resolveQueryTerm } = require('../utils/activeYear');
 
 const getClasses = asyncHandler(async (req, res) => {
   const page = parseInt(req.query.page) || 1;
@@ -18,6 +19,8 @@ const getClasses = asyncHandler(async (req, res) => {
     const escaped = req.query.search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     query.name = new RegExp(escaped, 'i');
   }
+  const qAcademicYearId = await resolveQueryAcademicYear(req.query.academicYearId);
+  if (qAcademicYearId) query.academicYearId = qAcademicYearId;
   const total = await Class.countDocuments(query);
   const classes = await Class.find(query)
     .populate('academicYearId', 'year')
@@ -32,13 +35,14 @@ const getClasses = asyncHandler(async (req, res) => {
 });
 
 const createClass = asyncHandler(async (req, res) => {
-  const { name, level, academicYearId } = req.body;
+  let { name, level, academicYearId } = req.body;
   if (!name) {
     return res.status(400).json({
       success: false,
       message: 'Please provide name',
     });
   }
+  academicYearId = await resolveAcademicYear(academicYearId);
   const validNames = ['S1', 'S2', 'S3', 'S4', 'S5', 'S6'];
   if (!validNames.includes(name)) {
     return res.status(400).json({
@@ -125,9 +129,9 @@ const getClassStudents = asyncHandler(async (req, res) => {
       });
     }
   }
-  const { academicYearId } = req.query;
+  const qAcademicYearId = await resolveQueryAcademicYear(req.query.academicYearId);
   let studentQuery = { classId: req.params.id };
-  if (academicYearId) studentQuery.academicYearId = academicYearId;
+  if (qAcademicYearId) studentQuery.academicYearId = qAcademicYearId;
   const students = await Student.find(studentQuery)
     .populate('sectionId', 'name')
     .populate('academicYearId', 'year')
@@ -146,11 +150,12 @@ const getClassPerformance = asyncHandler(async (req, res) => {
       });
     }
   }
-  const { termId, academicYearId } = req.query;
   const classId = req.params.id;
+  const qAcademicYearId = await resolveQueryAcademicYear(req.query.academicYearId);
+  const qTermId = await resolveQueryTerm(req.query.termId, qAcademicYearId);
   let match = { classId };
-  if (termId) match.termId = termId;
-  if (academicYearId) match.academicYearId = academicYearId;
+  if (qTermId) match.termId = qTermId;
+  if (qAcademicYearId) match.academicYearId = qAcademicYearId;
   const reports = await Report.find(match)
     .populate('studentId', 'firstName lastName studentCode')
     .sort({ overallAverage: -1 })
@@ -163,8 +168,8 @@ const getClassPerformance = asyncHandler(async (req, res) => {
     : 0;
 
   let markMatch = { classId };
-  if (termId) markMatch.termId = termId;
-  if (academicYearId) markMatch.academicYearId = academicYearId;
+  if (qTermId) markMatch.termId = qTermId;
+  if (qAcademicYearId) markMatch.academicYearId = qAcademicYearId;
   const subjectAverages = await Mark.aggregate([
     { $match: markMatch },
     { $group: { _id: '$subjectId', avg: { $avg: '$subjectAverage' } } },

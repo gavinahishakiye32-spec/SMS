@@ -37,6 +37,23 @@ const createUser = asyncHandler(async (req, res) => {
       message: 'You do not have permission to create this user role',
     });
   }
+
+  if (role === 'superadmin') {
+    const existingSuperadmin = await User.findOne({ role: 'superadmin' });
+    if (existingSuperadmin) {
+      return res.status(403).json({
+        success: false,
+        message: 'A superadmin already exists. Only one superadmin is allowed.',
+      });
+    }
+  }
+
+  if (role && !['superadmin', 'schooladmin', 'teacher', 'student'].includes(role)) {
+    return res.status(400).json({
+      success: false,
+      message: 'Invalid role specified',
+    });
+  }
   
   const exists = await User.findOne({ email });
   if (exists) {
@@ -101,9 +118,42 @@ const updateUser = asyncHandler(async (req, res) => {
     }
   }
   
+  const newRole = req.body.role || user.role;
+
+  if (req.body.role && !['superadmin', 'schooladmin', 'teacher', 'student'].includes(req.body.role)) {
+    return res.status(400).json({
+      success: false,
+      message: 'Invalid role specified',
+    });
+  }
+
+  if (req.body.role && user.role === 'student' && ['superadmin', 'schooladmin'].includes(req.body.role)) {
+    return res.status(403).json({
+      success: false,
+      message: 'Students cannot be promoted to admin roles',
+    });
+  }
+
+  if (req.user.role === 'schooladmin' && req.body.role && ['superadmin', 'schooladmin'].includes(req.body.role)) {
+    return res.status(403).json({
+      success: false,
+      message: 'You do not have permission to assign this role',
+    });
+  }
+
+  if (req.body.role === 'superadmin' && newRole === 'superadmin') {
+    const existingSuperadmin = await User.findOne({ role: 'superadmin', _id: { $ne: user._id } });
+    if (existingSuperadmin) {
+      return res.status(403).json({
+        success: false,
+        message: 'A superadmin already exists. Only one superadmin is allowed.',
+      });
+    }
+  }
+
   user.name = req.body.name || user.name;
   user.email = req.body.email || user.email;
-  user.role = req.body.role || user.role;
+  user.role = newRole;
   if (req.body.password) {
     user.password = req.body.password;
   }
@@ -141,12 +191,12 @@ const deleteUser = asyncHandler(async (req, res) => {
     });
   }
   if (user.role === 'student') {
-    const student = await Student.findOne({ userId: user._id });
-    if (student) {
+    const students = await Student.find({ userId: user._id });
+    for (const student of students) {
       await Mark.deleteMany({ studentId: student._id });
       await Report.deleteMany({ studentId: student._id });
-      await Student.deleteOne({ _id: student._id });
     }
+    await Student.deleteMany({ userId: user._id });
   } else if (user.role === 'teacher') {
     await Teacher.deleteOne({ userId: user._id });
   }

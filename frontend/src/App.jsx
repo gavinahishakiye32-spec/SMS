@@ -14,6 +14,7 @@ const ParentsPage = lazy(() => import('./pages/admin/ParentsPage'));
 const ClassesPage = lazy(() => import('./pages/admin/ClassesPage'));
 const SectionsPage = lazy(() => import('./pages/admin/SectionsPage'));
 const SubjectsPage = lazy(() => import('./pages/admin/SubjectsPage'));
+const UsersPage = lazy(() => import('./pages/admin/UsersPage'));
 const AcademicYearsPage = lazy(() => import('./pages/admin/AcademicYearsPage'));
 const TermsPage = lazy(() => import('./pages/admin/TermsPage'));
 const MarksPage = lazy(() => import('./pages/admin/MarksPage'));
@@ -68,6 +69,7 @@ export default function App() {
         <Route path="classes" element={<ProtectedRoute roles={['superadmin', 'schooladmin']}><Lazy><ClassesPage /></Lazy></ProtectedRoute>} />
         <Route path="sections" element={<ProtectedRoute roles={['superadmin', 'schooladmin']}><Lazy><SectionsPage /></Lazy></ProtectedRoute>} />
         <Route path="subjects" element={<ProtectedRoute roles={['superadmin', 'schooladmin']}><Lazy><SubjectsPage /></Lazy></ProtectedRoute>} />
+        <Route path="users" element={<ProtectedRoute roles={['superadmin']}><Lazy><UsersPage /></Lazy></ProtectedRoute>} />
         <Route path="academic-years" element={<ProtectedRoute roles={['superadmin', 'schooladmin']}><Lazy><AcademicYearsPage /></Lazy></ProtectedRoute>} />
         <Route path="terms" element={<ProtectedRoute roles={['superadmin', 'schooladmin']}><Lazy><TermsPage /></Lazy></ProtectedRoute>} />
         <Route path="marks" element={<ProtectedRoute roles={['superadmin', 'schooladmin']}><Lazy><MarksPage /></Lazy></ProtectedRoute>} />

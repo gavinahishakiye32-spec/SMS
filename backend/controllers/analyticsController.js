@@ -6,17 +6,19 @@ const Class = require('../models/Class');
 const Subject = require('../models/Subject');
 const Teacher = require('../models/Teacher');
 const { getTeacherClassIdSet } = require('../utils/teacherPermissions');
+const { resolveQueryAcademicYear, resolveQueryTerm } = require('../utils/activeYear');
 
 const getSchoolAnalytics = asyncHandler(async (req, res) => {
-  const { termId, academicYearId } = req.query;
+  const qTermId = await resolveQueryTerm(req.query.termId, req.query.academicYearId);
+  const qAcademicYearId = await resolveQueryAcademicYear(req.query.academicYearId);
   let match = {};
-  if (termId) match.termId = termId;
-  if (academicYearId) match.academicYearId = academicYearId;
+  if (qTermId) match.termId = qTermId;
+  if (qAcademicYearId) match.academicYearId = qAcademicYearId;
 
   const [totalStudents, totalTeachers, totalClasses] = await Promise.all([
-    Student.countDocuments(academicYearId ? { academicYearId } : {}),
+    Student.countDocuments(qAcademicYearId ? { academicYearId: qAcademicYearId } : {}),
     Teacher.countDocuments({}),
-    Class.countDocuments(academicYearId ? { academicYearId } : {}),
+    Class.countDocuments(qAcademicYearId ? { academicYearId: qAcademicYearId } : {}),
   ]);
 
   const reports = await Report.find(match)
@@ -106,10 +108,12 @@ const getClassAnalytics = asyncHandler(async (req, res) => {
       });
     }
   }
-  const { termId, academicYearId } = req.query;
+  const qTermId = await resolveQueryTerm(req.query.termId, req.query.academicYearId);
+  const qAcademicYearId = await resolveQueryAcademicYear(req.query.academicYearId);
   let match = { classId };
-  if (termId) match.termId = termId;
-  if (academicYearId) match.academicYearId = academicYearId;
+  if (qTermId) match.termId = qTermId;
+  if (qAcademicYearId) match.academicYearId = qAcademicYearId;
+
   const reports = await Report.find(match)
     .populate('studentId', 'firstName lastName studentCode')
     .sort({ overallAverage: -1 });
@@ -155,10 +159,11 @@ const getSubjectAnalytics = asyncHandler(async (req, res) => {
       });
     }
   }
-  const { termId, academicYearId } = req.query;
+  const qTermId = await resolveQueryTerm(req.query.termId, req.query.academicYearId);
+  const qAcademicYearId = await resolveQueryAcademicYear(req.query.academicYearId);
   let match = { subjectId };
-  if (termId) match.termId = termId;
-  if (academicYearId) match.academicYearId = academicYearId;
+  if (qTermId) match.termId = qTermId;
+  if (qAcademicYearId) match.academicYearId = qAcademicYearId;
   const marks = await Mark.find(match)
     .populate('studentId', 'firstName lastName studentCode classId')
     .populate('classId', 'name');
@@ -181,10 +186,12 @@ const getSubjectAnalytics = asyncHandler(async (req, res) => {
 });
 
 const getTopStudents = asyncHandler(async (req, res) => {
-  const { limit: qLimit, termId, academicYearId } = req.query;
+  const { limit: qLimit } = req.query;
+  const qTermId = await resolveQueryTerm(req.query.termId, req.query.academicYearId);
+  const qAcademicYearId = await resolveQueryAcademicYear(req.query.academicYearId);
   let match = {};
-  if (termId) match.termId = termId;
-  if (academicYearId) match.academicYearId = academicYearId;
+  if (qTermId) match.termId = qTermId;
+  if (qAcademicYearId) match.academicYearId = qAcademicYearId;
   const reports = await Report.find(match)
     .select('overallAverage grade studentId')
     .populate('studentId', 'firstName lastName studentCode')
@@ -195,10 +202,12 @@ const getTopStudents = asyncHandler(async (req, res) => {
 });
 
 const getBottomStudents = asyncHandler(async (req, res) => {
-  const { limit: qLimit, termId, academicYearId } = req.query;
+  const { limit: qLimit } = req.query;
+  const qTermId = await resolveQueryTerm(req.query.termId, req.query.academicYearId);
+  const qAcademicYearId = await resolveQueryAcademicYear(req.query.academicYearId);
   let match = {};
-  if (termId) match.termId = termId;
-  if (academicYearId) match.academicYearId = academicYearId;
+  if (qTermId) match.termId = qTermId;
+  if (qAcademicYearId) match.academicYearId = qAcademicYearId;
   const reports = await Report.find(match)
     .select('overallAverage grade studentId')
     .populate('studentId', 'firstName lastName studentCode')

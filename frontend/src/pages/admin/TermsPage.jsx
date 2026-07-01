@@ -1,12 +1,22 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '../../context/ToastContext';
 import API from '../../services/api';
+import { useActiveYear } from '../../services/useActiveYear';
 
 export default function TermsPage() {
+  const { activeYear } = useActiveYear();
   const [form, setForm] = useState({ name: 'Term 1', academicYearId: '', startDate: '', endDate: '' });
   const [editing, setEditing] = useState(null);
   const [editForm, setEditForm] = useState({ name: 'Term 1', academicYearId: '', startDate: '', endDate: '' });
+  const yearSynced = useRef(false);
+
+  useEffect(() => {
+    if (activeYear && !yearSynced.current) {
+      yearSynced.current = true;
+      setForm((prev) => ({ ...prev, academicYearId: activeYear._id }));
+    }
+  }, [activeYear]);
   const queryClient = useQueryClient();
   const { addToast } = useToast();
 

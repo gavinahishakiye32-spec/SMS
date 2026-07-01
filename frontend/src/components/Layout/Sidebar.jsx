@@ -17,23 +17,25 @@ import {
   BarChart3,
   Lightbulb,
   Settings,
+  UserCog,
 } from 'lucide-react';
 
-const superAdminLinks = [
-  { to: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard, color: '#3B82F6' },
-  { to: '/admin/students', label: 'Students', icon: GraduationCap, color: '#10B981' },
-  { to: '/admin/teachers', label: 'Teachers', icon: Presentation, color: '#8B5CF6' },
-  { to: '/admin/parents', label: 'Parents', icon: Users, color: '#EC4899' },
-  { to: '/admin/classes', label: 'Classes', icon: School, color: '#F59E0B' },
-  { to: '/admin/sections', label: 'Sections', icon: Ruler, color: '#14B8A6' },
-  { to: '/admin/subjects', label: 'Subjects', icon: BookOpen, color: '#EF4444' },
-  { to: '/admin/academic-years', label: 'Academic Years', icon: CalendarDays, color: '#06B6D4' },
-  { to: '/admin/terms', label: 'Terms', icon: CalendarRange, color: '#6366F1' },
-  { to: '/admin/marks', label: 'Marks', icon: CheckSquare, color: '#84CC16' },
-  { to: '/admin/reports', label: 'Reports', icon: FileText, color: '#64748B' },
-  { to: '/admin/analytics', label: 'Analytics', icon: BarChart3, color: '#A855F7' },
-  { to: '/admin/suggestions', label: 'Suggestions', icon: Lightbulb, color: '#FBBF24' },
-  { to: '/admin/settings', label: 'Settings', icon: Settings, color: '#6B7280' },
+const adminLinks = [
+  { to: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard, color: '#3B82F6', roles: ['superadmin', 'schooladmin'] },
+  { to: '/admin/users', label: 'Users', icon: UserCog, color: '#EF4444', roles: ['superadmin'] },
+  { to: '/admin/students', label: 'Students', icon: GraduationCap, color: '#10B981', roles: ['superadmin', 'schooladmin'] },
+  { to: '/admin/teachers', label: 'Teachers', icon: Presentation, color: '#8B5CF6', roles: ['superadmin', 'schooladmin'] },
+  { to: '/admin/parents', label: 'Parents', icon: Users, color: '#EC4899', roles: ['superadmin', 'schooladmin'] },
+  { to: '/admin/classes', label: 'Classes', icon: School, color: '#F59E0B', roles: ['superadmin', 'schooladmin'] },
+  { to: '/admin/sections', label: 'Sections', icon: Ruler, color: '#14B8A6', roles: ['superadmin', 'schooladmin'] },
+  { to: '/admin/subjects', label: 'Subjects', icon: BookOpen, color: '#EF4444', roles: ['superadmin', 'schooladmin'] },
+  { to: '/admin/academic-years', label: 'Academic Years', icon: CalendarDays, color: '#06B6D4', roles: ['superadmin', 'schooladmin'] },
+  { to: '/admin/terms', label: 'Terms', icon: CalendarRange, color: '#6366F1', roles: ['superadmin', 'schooladmin'] },
+  { to: '/admin/marks', label: 'Marks', icon: CheckSquare, color: '#84CC16', roles: ['superadmin', 'schooladmin'] },
+  { to: '/admin/reports', label: 'Reports', icon: FileText, color: '#64748B', roles: ['superadmin', 'schooladmin'] },
+  { to: '/admin/analytics', label: 'Analytics', icon: BarChart3, color: '#A855F7', roles: ['superadmin', 'schooladmin'] },
+  { to: '/admin/suggestions', label: 'Suggestions', icon: Lightbulb, color: '#FBBF24', roles: ['superadmin', 'schooladmin', 'teacher'] },
+  { to: '/admin/settings', label: 'Settings', icon: Settings, color: '#6B7280', roles: ['superadmin', 'schooladmin'] },
 ];
 
 const teacherLinks = [
@@ -52,11 +54,16 @@ const studentLinks = [
 
 export default function Sidebar({ open, onClose }) {
   const { user } = useAuth();
-  const links = user?.role === 'superadmin' || user?.role === 'schooladmin'
-    ? superAdminLinks
-    : user?.role === 'teacher'
-    ? teacherLinks
-    : studentLinks;
+
+  let baseLinks;
+  if (user?.role === 'superadmin' || user?.role === 'schooladmin') {
+    baseLinks = adminLinks;
+  } else if (user?.role === 'teacher') {
+    baseLinks = teacherLinks;
+  } else {
+    baseLinks = studentLinks;
+  }
+  const links = baseLinks.filter((l) => !l.roles || l.roles.includes(user?.role));
 
   const { data: unreadData } = useQuery({
     queryKey: ['suggestions-unread'],
