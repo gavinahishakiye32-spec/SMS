@@ -61,8 +61,8 @@ export default function StudentReport() {
   });
 
   return (
-    <div data-print-hidden className="space-y-4">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 no-print">
+    <div className="space-y-4">
+      <div data-print-hidden className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">My Report Card</h1>
           <p className="text-sm text-gray-500 dark:text-gray-400">
@@ -72,7 +72,7 @@ export default function StudentReport() {
           </p>
         </div>
       </div>
-      <div className="flex flex-col sm:flex-row flex-wrap gap-3 no-print">
+      <div data-print-hidden className="flex flex-col sm:flex-row flex-wrap gap-3">
         <select value={academicYearId} onChange={(e) => { setAcademicYearId(e.target.value); setTermId(''); }}
           className="w-full sm:w-auto px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
           <option value="">All Years</option>

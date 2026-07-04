@@ -15,7 +15,7 @@ export default function SchoolSettingsPage() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: (formData) => API.put('/settings', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
+    mutationFn: (formData) => API.put('/settings', formData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['school-settings'] });
       addToast('Settings saved!', 'success');

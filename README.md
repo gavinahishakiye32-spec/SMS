@@ -17,7 +17,7 @@ cd backend
 cp .env.example .env    # fill in real values
 npm install
 npm run dev             # http://localhost:5000
-npm test                # 196 tests — all passing
+npm test                # 360 tests — all passing
 ```
 
 ### Frontend
@@ -29,16 +29,19 @@ npm run dev             # http://localhost:5173
 
 ## Test Status
 
-**196/196 tests passing** — runs via GitHub Actions on every push/PR.
+**360/360 tests passing** — runs via GitHub Actions on every push/PR.
 
-| File                | Tests | Status |
-| ------------------- | ----- | ------ |
-| auth.test.js        | 36    | ✅     |
-| core-crud.test.js   | 43    | ✅     |
-| people-crud.test.js | 35    | ✅     |
-| academic-crud.test.js| 55   | ✅     |
-| filters.test.js     | 20    | ✅     |
-| edge-cases.test.js  | 7     | ✅     |
+| File                   | Tests | Status |
+| ---------------------- | ----- | ------ |
+| auth.test.js           | 36    | ✅     |
+| core-crud.test.js      | 43    | ✅     |
+| people-crud.test.js    | 35    | ✅     |
+| academic-crud.test.js  | 55    | ✅     |
+| filters.test.js        | 20    | ✅     |
+| edge-cases.test.js     | 7     | ✅     |
+| permissions.test.js    | 80    | ✅     |
+| cascading.test.js      | 8     | ✅     |
+| error-handling.test.js | 76    | ✅     |
 
 ## Default Credentials (after `npm run seed`)
 
@@ -71,6 +74,8 @@ npm run dev             # http://localhost:5173
 
 - **Backend**: Render (`render.yaml` at repo root). Set `MONGO_URI`, `JWT_SECRET`, `CLOUDINARY_*` as environment secrets.
 - **Frontend**: Vercel (`vercel.json` at `/frontend`). Builds automatically.
+
+> If deploying the backend yourself, update `frontend/.env.production` and `frontend/vercel.json` to point to your own Render URL instead of `sms-so54.onrender.com`.
 
 ## Known Issues
 

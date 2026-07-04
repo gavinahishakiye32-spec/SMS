@@ -17,7 +17,7 @@ export default function ParentsPage() {
 
   const { data } = useQuery({
     queryKey: ['parents', page, search],
-    queryFn: () => API.get(`/parents?page=${page}&limit=10&search=${search}`).then((r) => r.data),
+    queryFn: () => API.get(`/parents?page=${page}&limit=10&search=${encodeURIComponent(search)}`).then((r) => r.data),
   });
 
   const { data: students, isLoading: studentsLoading } = useQuery({

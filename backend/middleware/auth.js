@@ -19,9 +19,15 @@ const protect = async (req, res, next) => {
       }
       next();
     } catch (error) {
-      return res.status(401).json({
+      if (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError') {
+        return res.status(401).json({
+          success: false,
+          message: 'Access denied. Please login again.',
+        });
+      }
+      return res.status(500).json({
         success: false,
-        message: 'Access denied. Please login again.',
+        message: 'Server error. Please try again.',
       });
     }
   } else {

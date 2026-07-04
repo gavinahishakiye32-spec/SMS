@@ -1,4 +1,5 @@
 const asyncHandler = require('express-async-handler');
+const AcademicYear = require('../models/AcademicYear');
 const Term = require('../models/Term');
 const Mark = require('../models/Mark');
 const Report = require('../models/Report');
@@ -104,7 +105,7 @@ const deleteTerm = asyncHandler(async (req, res) => {
 });
 
 const getActiveTerm = asyncHandler(async (req, res) => {
-  const activeYear = await require('../models/AcademicYear').findOne({ isActive: true });
+  const activeYear = await AcademicYear.findOne({ isActive: true });
   if (!activeYear) {
     return res.status(404).json({ success: false, message: 'No active academic year found' });
   }

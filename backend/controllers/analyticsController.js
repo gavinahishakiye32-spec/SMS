@@ -152,11 +152,19 @@ const getSubjectAnalytics = asyncHandler(async (req, res) => {
   const { subjectId } = req.params;
   if (req.user.role === 'teacher') {
     const teacher = await Teacher.findOne({ userId: req.user._id }).select('subjectIds').lean();
-    if (teacher && !teacher.subjectIds.some(sid => sid.toString() === subjectId.toString())) {
-      return res.status(403).json({
-        success: false,
-        message: 'You do not have permission to view analytics for this subject',
+    if (teacher && teacher.subjectIds) {
+      const hasSubject = teacher.subjectIds.some(entry => {
+        if (entry && typeof entry === 'object' && entry.subjectId) {
+          return entry.subjectId.toString() === subjectId.toString();
+        }
+        return entry && entry.toString() === subjectId.toString();
       });
+      if (!hasSubject) {
+        return res.status(403).json({
+          success: false,
+          message: 'You do not have permission to view analytics for this subject',
+        });
+      }
     }
   }
   const qTermId = await resolveQueryTerm(req.query.termId, req.query.academicYearId);

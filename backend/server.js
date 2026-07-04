@@ -43,7 +43,6 @@ const limiter = rateLimit({
 });
 app.use('/api', limiter);
 
-connectDB();
 connectCloudinary();
 
 const seedAdmins = async () => {
@@ -60,7 +59,10 @@ const seedAdmins = async () => {
   }
 };
 
-seedAdmins().catch(err => console.error('Auto-seed error:', err.message));
+(async () => {
+  await connectDB();
+  await seedAdmins();
+})().catch(err => console.error('Startup error:', err.message));
 
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/users', require('./routes/userRoutes'));
@@ -81,14 +83,14 @@ app.use('/api/settings', require('./routes/settingRoutes'));
 app.get('/run-seed', async (req, res) => {
   try {
     await seedAdmins();
-    res.json({ message: 'Database seeded successfully!' });
+    res.json({ success: true, message: 'Database seeded successfully!' });
   } catch (err) {
-    res.status(500).json({ message: 'Seed failed', error: err.message });
+    res.status(500).json({ success: false, message: 'Seed failed', error: err.message });
   }
 });
 
 app.get('/', (req, res) => {
-  res.json({ message: 'SMS API is running' });
+  res.json({ success: true, message: 'SMS API is running' });
 });
 
 app.use('/api/*', (req, res) => {

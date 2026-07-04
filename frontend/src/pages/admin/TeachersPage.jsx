@@ -210,7 +210,7 @@ export default function TeachersPage() {
                       setEditing(t._id);
                       setShowForm(true);
                     }} className="text-blue-600 hover:underline text-xs">Edit</button>
-                    <button onClick={() => { if (t.userId?._id) resetPasswordMutation.mutate({ userId: t.userId._id, name: `${t.firstName} ${t.lastName}` }); else addToast('No linked user account', 'error'); }} className="text-orange-600 hover:underline text-xs">Reset Pwd</button>
+                    <button onClick={() => { const uid = t.userId?._id || t.userId; if (uid) resetPasswordMutation.mutate({ userId: uid, name: `${t.firstName} ${t.lastName}` }); else addToast('No linked user account', 'error'); }} className="text-orange-600 hover:underline text-xs">Reset Pwd</button>
                     <button onClick={() => { if (confirm('Delete?')) deleteMutation.mutate(t._id); }} className="text-red-600 hover:underline text-xs">Delete</button>
                   </td>
                 </tr>
