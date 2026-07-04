@@ -22,9 +22,10 @@ export default function UsersPage() {
   const queryClient = useQueryClient();
 
   const roleParam = roleTab ? `&role=${roleTab}` : '';
+  const searchParam = search ? `&search=${encodeURIComponent(search)}` : '';
   const { data } = useQuery({
-    queryKey: ['users', page, roleTab],
-    queryFn: () => API.get(`/users?page=${page}&limit=10${roleParam}`).then((r) => r.data),
+    queryKey: ['users', page, roleTab, search],
+    queryFn: () => API.get(`/users?page=${page}&limit=10${roleParam}${searchParam}`).then((r) => r.data),
   });
 
   const visibleTabs = TABS.filter((t) => t.roles.includes(user?.role));
@@ -76,12 +77,7 @@ export default function UsersPage() {
     setShowForm(true);
   };
 
-  const filteredUsers = data?.data?.filter((u) => {
-    const term = search.toLowerCase();
-    if (!term) return true;
-    return u.name?.toLowerCase().includes(term) || u.email?.toLowerCase().includes(term);
-  });
-
+  const users = data?.data;
   const roleColors = {
     superadmin: 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400',
     schooladmin: 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-400',
@@ -113,7 +109,7 @@ export default function UsersPage() {
       </div>
 
       <input type="text" placeholder="Search by name or email..." value={search}
-        onChange={(e) => setSearch(e.target.value)}
+        onChange={(e) => { setSearch(e.target.value); setPage(1); }}
         className="w-full sm:w-72 px-4 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
 
       {showForm && (
@@ -160,9 +156,9 @@ export default function UsersPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-              {filteredUsers?.length === 0 ? (
+              {users?.length === 0 ? (
                 <tr><td colSpan="4" className="p-4 text-center text-gray-500 dark:text-gray-400">No users found</td></tr>
-              ) : filteredUsers?.map((u) => (
+              ) : users?.map((u) => (
                 <tr key={u._id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
                   <td className="p-3 font-medium text-gray-900 dark:text-white">{u.name}</td>
                   <td className="p-3 text-gray-700 dark:text-gray-300">{u.email}</td>

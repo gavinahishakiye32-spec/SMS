@@ -17,8 +17,19 @@ const getUsers = asyncHandler(async (req, res) => {
     if (['schooladmin', 'teacher'].includes(req.query.role)) {
       filter.role = req.query.role;
     }
+  } else if (req.user.role === 'superadmin') {
+    filter.role = { $in: ['superadmin', 'schooladmin', 'teacher'] };
   } else {
     filter.role = { $in: ['schooladmin', 'teacher'] };
+  }
+
+  if (req.query.search) {
+    const escaped = req.query.search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const searchRegex = new RegExp(escaped, 'i');
+    filter.$or = [
+      { name: searchRegex },
+      { email: searchRegex },
+    ];
   }
 
   const total = await User.countDocuments(filter);
